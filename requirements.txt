@@ -1,0 +1,10 @@
+langchain
+langchain-core
+langchain-community
+langchain-openai  
+langgraph
+langsmith
+psycopg2-binary
+python-dotenv
+sqlalchemy
+# chadwick

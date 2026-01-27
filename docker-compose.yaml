@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: retrosheet-postgres
+    environment:
+      POSTGRES_USER: baseball
+      POSTGRES_PASSWORD: baseball
+      POSTGRES_DB: retrosheet
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Initialize database with comprehensive schema
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      # Optional: Keep simple init.sql as backup
+      # - ./db/init.sql:/docker-entrypoint-initdb.d/02-init.sql
+
+      
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - 5051:80
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
