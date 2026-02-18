@@ -1,0 +1,15 @@
+retrosheet:
+  public
+    - players
+    - games
+    - teams
+    - umpires
+    - parks
+    - rosters
+    - player_seasons
+    - events
+    - batting_stats
+    - fielding_stats
+    - pitching_stats
+    - game_lineups
+    - team_game_stats

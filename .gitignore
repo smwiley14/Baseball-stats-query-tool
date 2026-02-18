@@ -1,5 +1,4 @@
 data/
-db/
 scripts/
 logs/
 *.log
@@ -11,3 +10,4 @@ logs/
 *.log.*.*.*.*.*.*
 *.log.*.*.*.*.*.*.*
 .env
+db/

@@ -15,12 +15,32 @@ CREATE TABLE IF NOT EXISTS players (
     throws CHAR(1)
 );
 
+-- Franchises table: represents a franchise that can have multiple team instances
+-- Example: Montreal Expos (MON) and Washington Nationals (WAS) are the same franchise
+-- Example: Houston Astros moved from NL to AL but stayed the same franchise
+CREATE TABLE IF NOT EXISTS franchises (
+    franchise_id TEXT PRIMARY KEY,
+    franchise_name TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Teams table: represents a team instance (can be part of a franchise)
+-- A franchise can have multiple teams (different cities, leagues, or time periods)
+-- Example: MON (Montreal Expos 1969-2004) and WAS (Washington Nationals 2005-2021) share franchise_id
+-- Example: HOU has two rows: NL (1962-2012) and AL (2013-2021), same franchise_id
 CREATE TABLE IF NOT EXISTS teams (
     team_id TEXT PRIMARY KEY,
+    franchise_id TEXT REFERENCES franchises(franchise_id),
     league TEXT,
     city TEXT,
-    name TEXT
+    name TEXT,
+    first_year INTEGER,
+    last_year INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Index for faster franchise lookups
+CREATE INDEX IF NOT EXISTS idx_teams_franchise_id ON teams(franchise_id);
 
 CREATE TABLE IF NOT EXISTS games (
     game_id TEXT PRIMARY KEY,

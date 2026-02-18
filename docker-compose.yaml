@@ -1,8 +1,7 @@
-version: "3.9"
-
 services:
   postgres:
-    image: postgres:16
+    # Use pgvector-enabled PostgreSQL image for vector similarity search
+    image: pgvector/pgvector:pg16
     container_name: retrosheet-postgres
     environment:
       POSTGRES_USER: baseball
@@ -12,10 +11,8 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # Initialize database with comprehensive schema
+      - ./db/enable_pgvector.sql:/docker-entrypoint-initdb.d/00-enable-pgvector.sql
       - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-      # Optional: Keep simple init.sql as backup
-      # - ./db/init.sql:/docker-entrypoint-initdb.d/02-init.sql
 
       
   pgadmin:

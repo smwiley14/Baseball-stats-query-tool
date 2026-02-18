@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-
+from backend.api.routes.main import chat_router
 router = APIRouter()
 
 app = FastAPI(
@@ -20,10 +20,10 @@ app.add_middleware(
 )
 
 
+app.include_router(chat_router, prefix="/chat")
 
-
-def get_app():
-    return app
+# def get_app():
+#     return app
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
