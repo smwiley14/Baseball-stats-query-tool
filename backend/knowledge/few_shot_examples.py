@@ -33,7 +33,6 @@ class SQLExample(BaseModel):
             if isinstance(data, dict):
                 examples[key] = cls(**data)
             else:
-                # Handle simple string format as fallback
                 examples[key] = cls(question=key, sql=str(data))
 
         return examples

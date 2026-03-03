@@ -1,7 +1,7 @@
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
 
-from backend.knowledge.vector_store import VectorStore
+from knowledge.vector_store import VectorStore
 
 class Tools:
     def __init__(self, vector_store: VectorStore):

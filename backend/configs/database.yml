@@ -1,0 +1,6 @@
+database:
+  host: localhost
+  port: 5433
+  database: retrosheet
+  username: baseball
+  password: baseball

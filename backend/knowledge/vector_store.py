@@ -7,10 +7,10 @@ from langchain_core.documents import Document
 from langchain_openai.embeddings import OpenAIEmbeddings
 from langchain_postgres import PGVector
 
-from backend.database.db_connect import DBConnector
+from database.db_connect import DBConnector
 
-from backend.knowledge.data_dictionary import DataDictionary
-from backend.knowledge.few_shot_examples import SQLExample
+from knowledge.data_dictionary import DataDictionary
+from knowledge.few_shot_examples import SQLExample
 import sqlparse
 
 
@@ -96,7 +96,7 @@ class VectorStore:
         if not user_query.strip() or not sql_query.strip():
             return
         formatted_sql = sqlparse.format(sql_query, reindent=True)
-        content = f"Question: {user_query}\n\n{formatted_sql}\n```"
+        content = f"Question: {user_query}\n```sql\n{formatted_sql}\n```"
         doc_id = hashlib.md5((user_query.strip() + sql_query.strip()).encode("utf-8")).hexdigest()
         metadata = {"type": "example", "title": f"generated_{doc_id}"}
         doc = Document(page_content=content, metadata=metadata)

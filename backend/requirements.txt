@@ -1,0 +1,27 @@
+langchain
+langchain-core
+langchain-community
+langchain-openai  
+langchain-postgres
+langgraph
+langsmith
+psycopg2-binary
+python-dotenv
+sqlalchemy
+# chadwick
+pydantic
+langchain_core
+langchain_openai
+langchain_postgres
+langchain_community
+langchain_text_splitters
+langchain_text_splitters
+fastapi
+uvicorn
+python-multipart
+pydantic-settings
+pydantic-core
+pydantic-settings
+sqlalchemy
+pandas
+sqlparse

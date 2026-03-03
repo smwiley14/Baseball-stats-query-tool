@@ -2,14 +2,15 @@ from fastapi import FastAPI, APIRouter, Depends, HTTPException
 from sqlalchemy import desc, distinct, func
 from sqlalchemy.orm import Session
 
-from backend.database.db_connect import DBConnector
-from backend.knowledge.vector_store import VectorStore
-from backend.agent.agent import create_graph
+from database.db_connect import DBConnector
+from knowledge.vector_store import VectorStore
+from agent.agent import create_graph
+from agent.cancellation import QueryCancelledError, request_cancel, reset_cancel
 from langgraph.checkpoint.memory import MemorySaver
-from backend.api.chat_types import ChatRequest, ChatResponse
+from api.chat_types import CancelRequest, CancelResponse, ChatRequest, ChatResponse
 import uuid
 from langchain_core.messages import AIMessage, HumanMessage
-from backend.agent.state import State
+from agent.state import State
 from langgraph.types import Command
 chat_router = APIRouter()
 
@@ -36,9 +37,10 @@ def init_components() -> None:
 @chat_router.post("/")
 
 async def send_message(request: ChatRequest) -> ChatResponse:
+    session_id = request.session_id or str(uuid.uuid4())
     try : 
         init_components()
-        session_id = request.session_id or str(uuid.uuid4())
+        reset_cancel(session_id)
 
         user_message = HumanMessage(content=request.message)
         messages = [user_message]
@@ -54,6 +56,7 @@ async def send_message(request: ChatRequest) -> ChatResponse:
         
         # Create initial state
         initial_state = {
+            "session_id": session_id,
             "messages": [user_message],
             "user_query": request.message
         }
@@ -86,17 +89,46 @@ async def send_message(request: ChatRequest) -> ChatResponse:
                     "I processed your message but couldn't generate a response."
                 )
 
+        # Extract table data and summary from result
+        table_data = result.get("table_data")
+        supplemental_data = result.get("supplemental_data")
+        summary = result.get("summary", last_message)
+
         return ChatResponse(
-            message=last_message,
+            message=summary,
             session_id=session_id,
+            table_data=table_data,
+            supplemental_data=supplemental_data,
+            summary=summary,
             metadata={
                 "user_intent": result.get("user_intent"),
+                "query_type": result.get("query_type"),
+                "selected_stat_profile": result.get("selected_stat_profile"),
                 "sql_query": result.get("sql_query"),
                 "sql_safety_status": result.get("sql_safety_status"),
                 "sql_syntax_status": result.get("sql_syntax_status"),
                 "sql_execution_status": result.get("sql_execution_status"),
             },
         )
+    except QueryCancelledError:
+        return ChatResponse(
+            message="Query cancelled.",
+            session_id=session_id,
+            table_data=None,
+            supplemental_data=None,
+            summary="Query cancelled.",
+            metadata={
+                "cancelled": True,
+            },
+        )
     except Exception as e:
         print(f"Error initializing components: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        reset_cancel(session_id)
+
+
+@chat_router.post("/cancel/")
+async def cancel_query(request: CancelRequest) -> CancelResponse:
+    request_cancel(request.session_id)
+    return CancelResponse(status="cancel_requested", session_id=request.session_id)

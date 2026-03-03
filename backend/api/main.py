@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-from backend.api.routes.main import chat_router
+from api.routes.main import chat_router
+from knowledge.scripts.init_vector_store import init_knowledge_base
 router = APIRouter()
 
 app = FastAPI(
@@ -21,6 +22,12 @@ app.add_middleware(
 
 
 app.include_router(chat_router, prefix="/chat")
+
+
+@app.on_event("startup")
+def init_kb_on_startup() -> None:
+    """Initialize vector store documents when backend starts."""
+    init_knowledge_base()
 
 # def get_app():
 #     return app

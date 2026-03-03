@@ -1,0 +1,715 @@
+# SQL examples for few-shot learning
+# Priority: use season views whenever the question is season/career aggregate oriented.
+# Views used: all_batting_seasons, qualified_batting_seasons, all_pitching_seasons, qualified_pitching_seasons.
+
+player_season_batting_line:
+  question: "What were Aaron Judge's batting stats in 2020?"
+  sql: |
+    SELECT
+      p.first_name,
+      p.last_name,
+      s.season,
+      t.name AS team_name,
+      s.plate_appearances,
+      s.at_bats,
+      s.hits,
+      s.home_runs,
+      s.rbis,
+      s.walks,
+      s.strikeouts,
+      s.batting_average,
+      s.on_base_percentage,
+      s.slugging_percentage,
+      s.ops
+    FROM all_batting_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
+    WHERE p.first_name = 'Aaron'
+      AND p.last_name = 'Judge'
+      AND s.season = 2020
+
+player_season_pitching_line:
+  question: "What were Gerrit Cole's pitching stats in 2020?"
+  sql: |
+    SELECT
+      p.first_name,
+      p.last_name,
+      s.season,
+      t.name AS team_name,
+      s.innings_pitched,
+      s.wins,
+      s.losses,
+      s.saves,
+      s.strikeouts,
+      s.walks_allowed,
+      s.hits_allowed,
+      s.earned_runs,
+      s.era,
+      s.whip,
+      s.k_per_9,
+      s.bb_per_9
+    FROM all_pitching_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
+    WHERE p.first_name = 'Gerrit'
+      AND p.last_name = 'Cole'
+      AND s.season = 2020
+
+player_career_batting_totals:
+  question: "What are Mike Trout's career batting totals?"
+  sql: |
+    SELECT
+      p.first_name,
+      p.last_name,
+      SUM(s.plate_appearances) AS plate_appearances,
+      SUM(s.at_bats) AS at_bats,
+      SUM(s.hits) AS hits,
+      SUM(s.home_runs) AS home_runs,
+      SUM(s.rbis) AS rbis,
+      SUM(s.walks) AS walks,
+      ROUND(SUM(s.hits)::DECIMAL / NULLIF(SUM(s.at_bats), 0), 3) AS career_batting_average,
+      ROUND(
+        ((SUM(s.hits) + SUM(s.walks) + SUM(s.hit_by_pitch))::DECIMAL /
+         NULLIF(SUM(s.at_bats) + SUM(s.walks) + SUM(s.hit_by_pitch) + SUM(s.sacrifice_flies), 0))
+        +
+        ((SUM(s.singles) + 2 * SUM(s.doubles) + 3 * SUM(s.triples) + 4 * SUM(s.home_runs))::DECIMAL /
+         NULLIF(SUM(s.at_bats), 0)),
+        3
+      ) AS career_ops
+    FROM all_batting_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    WHERE p.first_name = 'Mike'
+      AND p.last_name = 'Trout'
+    GROUP BY p.player_id, p.first_name, p.last_name
+
+player_career_pitching_totals:
+  question: "What are Clayton Kershaw's career pitching totals?"
+  sql: |
+    SELECT
+      p.first_name,
+      p.last_name,
+      SUM(s.innings_pitched) AS innings_pitched,
+      SUM(s.wins) AS wins,
+      SUM(s.losses) AS losses,
+      SUM(s.saves) AS saves,
+      SUM(s.strikeouts) AS strikeouts,
+      ROUND((SUM(s.earned_runs) * 9.0) / NULLIF(SUM(s.innings_pitched), 0), 2) AS career_era,
+      ROUND((SUM(s.walks_allowed) + SUM(s.hits_allowed))::DECIMAL / NULLIF(SUM(s.innings_pitched), 0), 3) AS career_whip
+    FROM all_pitching_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    WHERE p.first_name = 'Clayton'
+      AND p.last_name = 'Kershaw'
+    GROUP BY p.player_id, p.first_name, p.last_name
+
+top_players_home_runs_season:
+  question: "Who hit the most home runs in 2020?"
+  sql: |
+    SELECT
+      p.first_name || ' ' || p.last_name AS player_name,
+      s.season,
+      s.home_runs
+    FROM all_batting_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    WHERE s.season = 2020
+    ORDER BY s.home_runs DESC
+    LIMIT 10
+
+top_players_rbis_season:
+  question: "Who led MLB in RBIs in 2020?"
+  sql: |
+    SELECT
+      p.first_name || ' ' || p.last_name AS player_name,
+      s.season,
+      s.rbis
+    FROM all_batting_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    WHERE s.season = 2020
+    ORDER BY s.rbis DESC
+    LIMIT 10
+
+top_players_stolen_bases_season:
+  question: "Who had the most stolen bases in 2020?"
+  sql: |
+    SELECT
+      p.first_name || ' ' || p.last_name AS player_name,
+      s.season,
+      s.stolen_bases
+    FROM all_batting_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    WHERE s.season = 2020
+    ORDER BY s.stolen_bases DESC
+    LIMIT 10
+
+top_players_qualified_ops_season:
+  question: "Who had the highest OPS in 2020 among qualified hitters?"
+  sql: |
+    SELECT
+      p.first_name || ' ' || p.last_name AS player_name,
+      s.season,
+      s.ops
+    FROM qualified_batting_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    WHERE s.season = 2020
+    ORDER BY s.ops DESC
+    LIMIT 10
+
+top_players_qualified_batting_avg_season:
+  question: "Who had the highest batting average in 2020 among qualified hitters?"
+  sql: |
+    SELECT
+      p.first_name || ' ' || p.last_name AS player_name,
+      s.season,
+      s.batting_average
+    FROM qualified_batting_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    WHERE s.season = 2020
+    ORDER BY s.batting_average DESC
+    LIMIT 10
+
+top_players_pitching_strikeouts_season:
+  question: "Which pitchers had the most strikeouts in 2020?"
+  sql: |
+    SELECT
+      p.first_name || ' ' || p.last_name AS player_name,
+      s.season,
+      s.strikeouts
+    FROM all_pitching_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    WHERE s.season = 2020
+    ORDER BY s.strikeouts DESC
+    LIMIT 10
+
+top_players_qualified_era_season:
+  question: "Who had the best ERA in 2020 among qualified pitchers?"
+  sql: |
+    SELECT
+      p.first_name || ' ' || p.last_name AS player_name,
+      s.season,
+      s.era,
+      s.innings_pitched
+    FROM qualified_pitching_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    WHERE s.season = 2020
+    ORDER BY s.era ASC
+    LIMIT 10
+
+top_players_qualified_whip_season:
+  question: "Who had the best WHIP in 2020 among qualified pitchers?"
+  sql: |
+    SELECT
+      p.first_name || ' ' || p.last_name AS player_name,
+      s.season,
+      s.whip,
+      s.innings_pitched
+    FROM qualified_pitching_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    WHERE s.season = 2020
+    ORDER BY s.whip ASC
+    LIMIT 10
+
+top_seasons_ops_all_time:
+  question: "What are the best OPS seasons of all time among qualified hitters?"
+  sql: |
+    SELECT
+      p.first_name || ' ' || p.last_name AS player_name,
+      s.season,
+      s.ops
+    FROM qualified_batting_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    ORDER BY s.ops DESC
+    LIMIT 20
+
+top_seasons_batting_avg_all_time:
+  question: "What are the best batting average seasons of all time among qualified hitters?"
+  sql: |
+    SELECT
+      p.first_name || ' ' || p.last_name AS player_name,
+      s.season,
+      s.batting_average
+    FROM qualified_batting_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    ORDER BY s.batting_average DESC
+    LIMIT 20
+
+top_seasons_era_all_time:
+  question: "What are the best ERA seasons of all time among qualified pitchers?"
+  sql: |
+    SELECT
+      p.first_name || ' ' || p.last_name AS player_name,
+      s.season,
+      s.era,
+      s.innings_pitched
+    FROM qualified_pitching_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    ORDER BY s.era ASC
+    LIMIT 20
+
+top_seasons_whip_all_time:
+  question: "What are the best WHIP seasons of all time among qualified pitchers?"
+  sql: |
+    SELECT
+      p.first_name || ' ' || p.last_name AS player_name,
+      s.season,
+      s.whip,
+      s.innings_pitched
+    FROM qualified_pitching_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    ORDER BY s.whip ASC
+    LIMIT 20
+
+single_team_batting_totals:
+  question: "What were the Yankees' team batting totals in 2020?"
+  sql: |
+    SELECT
+      t.name AS team_name,
+      s.season,
+      SUM(s.plate_appearances) AS plate_appearances,
+      SUM(s.at_bats) AS at_bats,
+      SUM(s.hits) AS hits,
+      SUM(s.home_runs) AS home_runs,
+      SUM(s.rbis) AS rbis,
+      SUM(s.walks) AS walks,
+      SUM(s.strikeouts) AS strikeouts,
+      ROUND(SUM(s.hits)::DECIMAL / NULLIF(SUM(s.at_bats), 0), 3) AS batting_average,
+      ROUND(
+        ((SUM(s.hits) + SUM(s.walks) + SUM(s.hit_by_pitch))::DECIMAL /
+         NULLIF(SUM(s.at_bats) + SUM(s.walks) + SUM(s.hit_by_pitch) + SUM(s.sacrifice_flies), 0))
+        +
+        ((SUM(s.singles) + 2 * SUM(s.doubles) + 3 * SUM(s.triples) + 4 * SUM(s.home_runs))::DECIMAL /
+         NULLIF(SUM(s.at_bats), 0)),
+        3
+      ) AS ops
+    FROM all_batting_seasons s
+    JOIN teams t ON s.team_id = t.team_id
+    WHERE t.name = 'Yankees'
+      AND s.season = 2020
+    GROUP BY t.team_id, t.name, s.season
+
+single_team_pitching_totals:
+  question: "What were the Dodgers' team pitching totals in 2020?"
+  sql: |
+    SELECT
+      t.name AS team_name,
+      s.season,
+      SUM(s.innings_pitched) AS innings_pitched,
+      SUM(s.wins) AS wins,
+      SUM(s.losses) AS losses,
+      SUM(s.saves) AS saves,
+      SUM(s.strikeouts) AS strikeouts,
+      SUM(s.walks_allowed) AS walks_allowed,
+      SUM(s.hits_allowed) AS hits_allowed,
+      ROUND((SUM(s.earned_runs) * 9.0) / NULLIF(SUM(s.innings_pitched), 0), 2) AS era,
+      ROUND((SUM(s.walks_allowed) + SUM(s.hits_allowed))::DECIMAL / NULLIF(SUM(s.innings_pitched), 0), 3) AS whip
+    FROM all_pitching_seasons s
+    JOIN teams t ON s.team_id = t.team_id
+    WHERE t.name = 'Dodgers'
+      AND s.season = 2020
+    GROUP BY t.team_id, t.name, s.season
+
+team_stats_home_runs_by_team:
+  question: "How many home runs did each team hit in 2020?"
+  sql: |
+    SELECT
+      t.name AS team_name,
+      s.season,
+      SUM(s.home_runs) AS home_runs
+    FROM all_batting_seasons s
+    JOIN teams t ON s.team_id = t.team_id
+    WHERE s.season = 2020
+    GROUP BY t.team_id, t.name, s.season
+    ORDER BY home_runs DESC
+
+team_stats_runs_by_team:
+  question: "How many runs did each team score in 2020?"
+  sql: |
+    SELECT
+      t.name AS team_name,
+      s.season,
+      SUM(s.runs) AS runs
+    FROM all_batting_seasons s
+    JOIN teams t ON s.team_id = t.team_id
+    WHERE s.season = 2020
+    GROUP BY t.team_id, t.name, s.season
+    ORDER BY runs DESC
+
+team_stats_pitching_strikeouts_by_team:
+  question: "How many strikeouts did each team's pitchers record in 2020?"
+  sql: |
+    SELECT
+      t.name AS team_name,
+      s.season,
+      SUM(s.strikeouts) AS strikeouts
+    FROM all_pitching_seasons s
+    JOIN teams t ON s.team_id = t.team_id
+    WHERE s.season = 2020
+    GROUP BY t.team_id, t.name, s.season
+    ORDER BY strikeouts DESC
+
+team_stats_best_team_era:
+  question: "Which teams had the best ERA in 2020?"
+  sql: |
+    SELECT
+      t.name AS team_name,
+      s.season,
+      ROUND((SUM(s.earned_runs) * 9.0) / NULLIF(SUM(s.innings_pitched), 0), 2) AS era
+    FROM all_pitching_seasons s
+    JOIN teams t ON s.team_id = t.team_id
+    WHERE s.season = 2020
+    GROUP BY t.team_id, t.name, s.season
+    ORDER BY era ASC
+    LIMIT 10
+
+top_teams_home_runs:
+  question: "Which teams hit the most home runs in 2020?"
+  sql: |
+    SELECT
+      t.name AS team_name,
+      s.season,
+      SUM(s.home_runs) AS home_runs
+    FROM all_batting_seasons s
+    JOIN teams t ON s.team_id = t.team_id
+    WHERE s.season = 2020
+    GROUP BY t.team_id, t.name, s.season
+    ORDER BY home_runs DESC
+    LIMIT 10
+
+top_teams_runs:
+  question: "Which teams scored the most runs in 2020?"
+  sql: |
+    SELECT
+      t.name AS team_name,
+      s.season,
+      SUM(s.runs) AS runs
+    FROM all_batting_seasons s
+    JOIN teams t ON s.team_id = t.team_id
+    WHERE s.season = 2020
+    GROUP BY t.team_id, t.name, s.season
+    ORDER BY runs DESC
+    LIMIT 10
+
+top_teams_pitching_strikeouts:
+  question: "Which teams had the most pitching strikeouts in 2020?"
+  sql: |
+    SELECT
+      t.name AS team_name,
+      s.season,
+      SUM(s.strikeouts) AS strikeouts
+    FROM all_pitching_seasons s
+    JOIN teams t ON s.team_id = t.team_id
+    WHERE s.season = 2020
+    GROUP BY t.team_id, t.name, s.season
+    ORDER BY strikeouts DESC
+    LIMIT 10
+
+top_teams_best_era:
+  question: "Which teams had the best team ERA in 2020?"
+  sql: |
+    SELECT
+      t.name AS team_name,
+      s.season,
+      ROUND((SUM(s.earned_runs) * 9.0) / NULLIF(SUM(s.innings_pitched), 0), 2) AS era
+    FROM all_pitching_seasons s
+    JOIN teams t ON s.team_id = t.team_id
+    WHERE s.season = 2020
+    GROUP BY t.team_id, t.name, s.season
+    ORDER BY era ASC
+    LIMIT 10
+
+season_stats_games_played:
+  question: "How many regular-season games were played in 2020?"
+  sql: |
+    SELECT COUNT(*) AS games
+    FROM games
+    WHERE season = 2020
+      AND LOWER(game_type) = 'regular'
+
+streak_consecutive_games_with_hit:
+  question: "What is the longest hit streak for Aaron Judge in 2020?"
+  sql: |
+    WITH player_games AS (
+      SELECT
+        bs.game_date,
+        bs.game_id,
+        CASE WHEN bs.hits > 0 THEN 1 ELSE 0 END AS has_hit,
+        ROW_NUMBER() OVER (ORDER BY bs.game_date, bs.game_id) AS rn1,
+        ROW_NUMBER() OVER (PARTITION BY CASE WHEN bs.hits > 0 THEN 1 ELSE 0 END ORDER BY bs.game_date, bs.game_id) AS rn2
+      FROM batting_stats bs
+      JOIN players p ON bs.player_id = p.player_id
+      JOIN games g ON bs.game_id = g.game_id
+      WHERE p.first_name = 'Aaron'
+        AND p.last_name = 'Judge'
+        AND bs.season = 2020
+        AND LOWER(g.game_type) = 'regular'
+    ),
+    hit_groups AS (
+      SELECT
+        game_date,
+        game_id,
+        has_hit,
+        rn1 - rn2 AS grp
+      FROM player_games
+      WHERE has_hit = 1
+    )
+    SELECT MAX(streak_len) AS longest_hit_streak
+    FROM (
+      SELECT COUNT(*) AS streak_len
+      FROM hit_groups
+      GROUP BY grp
+    ) s
+
+individual_player_stretch_last_15_games:
+  question: "How many hits did Aaron Judge have over his last 15 regular-season games?"
+  sql: |
+    WITH ranked_games AS (
+      SELECT
+        bs.player_id,
+        bs.game_id,
+        bs.game_date,
+        bs.hits,
+        ROW_NUMBER() OVER (
+          PARTITION BY bs.player_id
+          ORDER BY bs.game_date DESC, bs.game_id DESC
+        ) AS rn
+      FROM batting_stats bs
+      JOIN players p ON bs.player_id = p.player_id
+      JOIN games g ON bs.game_id = g.game_id
+      WHERE p.first_name = 'Aaron'
+        AND p.last_name = 'Judge'
+        AND LOWER(g.game_type) = 'regular'
+    )
+    SELECT
+      player_id,
+      COUNT(*) AS games_in_span,
+      SUM(hits) AS total_hits
+    FROM ranked_games
+    WHERE rn <= 15
+    GROUP BY player_id
+
+individual_player_stretch_date_range:
+  question: "How many strikeouts did Gerrit Cole have between 2020-08-01 and 2020-09-15?"
+  sql: |
+    SELECT
+      p.first_name,
+      p.last_name,
+      COUNT(DISTINCT ps.game_id) AS games,
+      SUM(ps.strikeouts) AS strikeouts,
+      SUM(ps.innings_pitched) AS innings_pitched
+    FROM pitching_stats ps
+    JOIN players p ON ps.player_id = p.player_id
+    JOIN games g ON ps.game_id = g.game_id
+    WHERE p.first_name = 'Gerrit'
+      AND p.last_name = 'Cole'
+      AND g.game_date BETWEEN '2020-08-01' AND '2020-09-15'
+      AND LOWER(g.game_type) = 'regular'
+    GROUP BY p.player_id, p.first_name, p.last_name
+
+player_matchup_batter_vs_pitcher_events:
+  question: "How did Aaron Judge perform against Gerrit Cole in regular season games?"
+  sql: |
+    SELECT
+      g.game_date,
+      e.game_id,
+      e.inning,
+      e.event_text,
+      e.event_code,
+      e.rbi,
+      e.outs
+    FROM events e
+    JOIN players b ON e.batter_id = b.player_id
+    JOIN players p ON e.pitcher_id = p.player_id
+    JOIN games g ON e.game_id = g.game_id
+    WHERE b.first_name = 'Aaron'
+      AND b.last_name = 'Judge'
+      AND p.first_name = 'Gerrit'
+      AND p.last_name = 'Cole'
+      AND LOWER(g.game_type) = 'regular'
+    ORDER BY g.game_date, e.game_id, e.inning
+
+player_matchup_batter_vs_pitcher_summary:
+  question: "What were Aaron Judge's totals against Gerrit Cole?"
+  sql: |
+    SELECT
+      b.first_name || ' ' || b.last_name AS batter_name,
+      p.first_name || ' ' || p.last_name AS pitcher_name,
+      COUNT(*) FILTER (WHERE e.ab_flag = 'T') AS at_bats,
+      COUNT(*) FILTER (WHERE e.hit_code IN (1, 2, 3, 4)) AS hits,
+      COUNT(*) FILTER (WHERE e.hit_code = 4) AS home_runs,
+      COALESCE(SUM(e.rbi), 0) AS rbis
+    FROM events e
+    JOIN players b ON e.batter_id = b.player_id
+    JOIN players p ON e.pitcher_id = p.player_id
+    JOIN games g ON e.game_id = g.game_id
+    WHERE b.first_name = 'Aaron'
+      AND b.last_name = 'Judge'
+      AND p.first_name = 'Gerrit'
+      AND p.last_name = 'Cole'
+      AND LOWER(g.game_type) = 'regular'
+    GROUP BY b.player_id, b.first_name, b.last_name, p.player_id, p.first_name, p.last_name
+
+player_matchups_vs_team_pitching:
+  question: "How did Aaron Judge hit against Red Sox pitching in 2020?"
+  sql: |
+    SELECT
+      p.first_name || ' ' || p.last_name AS player_name,
+      g.season,
+      SUM(bs.at_bats) AS at_bats,
+      SUM(bs.hits) AS hits,
+      SUM(bs.home_runs) AS home_runs,
+      SUM(bs.rbis) AS rbis,
+      ROUND(SUM(bs.hits)::DECIMAL / NULLIF(SUM(bs.at_bats), 0), 3) AS batting_average
+    FROM batting_stats bs
+    JOIN players p ON bs.player_id = p.player_id
+    JOIN games g ON bs.game_id = g.game_id
+    JOIN teams t ON t.team_id = CASE
+      WHEN bs.team_id = g.home_team_id THEN g.away_team_id
+      ELSE g.home_team_id
+    END
+    WHERE p.first_name = 'Aaron'
+      AND p.last_name = 'Judge'
+      AND t.name = 'Red Sox'
+      AND g.season = 2020
+      AND LOWER(g.game_type) = 'regular'
+    GROUP BY p.player_id, p.first_name, p.last_name, g.season
+
+date_range_home_runs:
+  question: "Who hit the most home runs between 2020-07-23 and 2020-08-31?"
+  sql: |
+    SELECT
+      p.first_name || ' ' || p.last_name AS player_name,
+      SUM(bs.home_runs) AS home_runs
+    FROM batting_stats bs
+    JOIN players p ON bs.player_id = p.player_id
+    JOIN games g ON bs.game_id = g.game_id
+    WHERE g.game_date BETWEEN '2020-07-23' AND '2020-08-31'
+      AND LOWER(g.game_type) = 'regular'
+    GROUP BY p.player_id, p.first_name, p.last_name
+    ORDER BY home_runs DESC
+    LIMIT 10
+
+best_single_season_home_runs:
+  question: "What are the best single-season home run totals of all time?"
+  sql: |
+    SELECT
+      p.first_name || ' ' || p.last_name AS player_name,
+      s.season,
+      s.home_runs
+    FROM all_batting_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    ORDER BY s.home_runs DESC
+    LIMIT 20
+
+best_single_season_strikeouts_pitching:
+  question: "What are the best single-season pitching strikeout totals of all time?"
+  sql: |
+    SELECT
+      p.first_name || ' ' || p.last_name AS player_name,
+      s.season,
+      s.strikeouts
+    FROM all_pitching_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    ORDER BY s.strikeouts DESC
+    LIMIT 20
+
+best_average_in_single_season:
+  question: "Best batting average in 2025?"
+  sql: |
+    SELECT
+      bs.player_id,
+      p.first_name,
+      p.last_name,
+      bs.season,
+      bs.team_id,
+      COUNT(DISTINCT bs.game_id) AS games_played,
+      SUM(bs.plate_appearances) AS plate_appearances,
+      SUM(bs.at_bats) AS at_bats,
+      SUM(bs.runs) AS runs,
+      SUM(bs.hits) AS hits,
+      SUM(bs.home_runs) AS home_runs,
+      SUM(bs.rbis) AS rbis,
+      SUM(bs.walks) AS walks,
+      SUM(bs.strikeouts) AS strikeouts,
+      SUM(bs.stolen_bases) AS stolen_bases,
+      ROUND(SUM(bs.hits)::DECIMAL / NULLIF(SUM(bs.at_bats), 0), 3) AS batting_average,
+      ROUND((SUM(bs.hits) + SUM(bs.walks) + SUM(bs.hit_by_pitch))::DECIMAL / NULLIF(SUM(bs.at_bats) + SUM(bs.walks) + SUM(bs.hit_by_pitch) + SUM(bs.sacrifice_flies), 0), 3) AS on_base_percentage,
+      ROUND((SUM(bs.singles) + 2 * SUM(bs.doubles) + 3 * SUM(bs.triples) + 4 * SUM(bs.home_runs))::DECIMAL / NULLIF(SUM(bs.at_bats), 0), 3) AS slugging_percentage,
+      ROUND(
+        (
+          (SUM(bs.hits) + SUM(bs.walks) + SUM(bs.hit_by_pitch))::DECIMAL / NULLIF(SUM(bs.at_bats) + SUM(bs.walks) + SUM(bs.hit_by_pitch) + SUM(bs.sacrifice_flies), 0)
+        ) + (
+          (SUM(bs.singles) + 2 * SUM(bs.doubles) + 3 * SUM(bs.triples) + 4 * SUM(bs.home_runs))::DECIMAL / NULLIF(SUM(bs.at_bats), 0)
+        ),
+        3
+      ) AS on_base_plus_slugging
+    FROM batting_stats bs
+    JOIN players p ON bs.player_id = p.player_id
+    JOIN games g ON bs.game_id = g.game_id
+    WHERE bs.season = 2025
+      AND LOWER(g.game_type) = 'regular'
+    GROUP BY bs.player_id, p.first_name, p.last_name, bs.season, bs.team_id
+    HAVING SUM(bs.plate_appearances) >= 502
+    ORDER BY batting_average DESC
+    LIMIT 20;
+
+traditional_pitching_output_format_example:
+  question: "Show traditional pitching stat lines for top ERA seasons in 2024."
+  sql: |
+    SELECT
+      ps.player_id,
+      p.first_name,
+      p.last_name,
+      ps.season,
+      ps.team_id,
+      COUNT(DISTINCT ps.game_id) AS games_played,
+      SUM(ps.innings_pitched) AS innings_pitched,
+      SUM(ps.hits_allowed) AS hits_allowed,
+      SUM(ps.home_runs_allowed) AS home_runs_allowed,
+      SUM(ps.runs_allowed) AS runs_allowed
+    FROM pitching_stats ps
+    JOIN players p ON ps.player_id = p.player_id
+    JOIN games g ON ps.game_id = g.game_id
+    WHERE ps.season = 2024
+      AND LOWER(g.game_type) = 'regular'
+    GROUP BY ps.player_id, p.first_name, p.last_name, ps.season, ps.team_id
+    HAVING SUM(ps.innings_pitched) >= 162
+    ORDER BY (SUM(ps.earned_runs) * 9.0) / NULLIF(SUM(ps.innings_pitched), 0) ASC
+    LIMIT 20
+
+traditional_batting_output_format_example:
+  question: "Show traditional batting stat lines for top OPS seasons in 2024."
+  sql: |
+    SELECT
+      bs.player_id,
+      p.first_name,
+      p.last_name,
+      bs.season,
+      bs.team_id,
+      COUNT(DISTINCT bs.game_id) AS games_played,
+      SUM(bs.plate_appearances) AS plate_appearances,
+      SUM(bs.at_bats) AS at_bats,
+      SUM(bs.runs) AS runs,
+      SUM(bs.hits) AS hits,
+      SUM(bs.home_runs) AS home_runs,
+      SUM(bs.rbis) AS rbis,
+      SUM(bs.walks) AS walks,
+      SUM(bs.strikeouts) AS strikeouts,
+      SUM(bs.stolen_bases) AS stolen_bases,
+      ROUND(SUM(bs.hits)::DECIMAL / NULLIF(SUM(bs.at_bats), 0), 3) AS batting_average,
+      ROUND((SUM(bs.hits) + SUM(bs.walks) + SUM(bs.hit_by_pitch))::DECIMAL / NULLIF(SUM(bs.at_bats) + SUM(bs.walks) + SUM(bs.hit_by_pitch) + SUM(bs.sacrifice_flies), 0), 3) AS on_base_percentage,
+      ROUND((SUM(bs.singles) + 2 * SUM(bs.doubles) + 3 * SUM(bs.triples) + 4 * SUM(bs.home_runs))::DECIMAL / NULLIF(SUM(bs.at_bats), 0), 3) AS slugging_percentage,
+      ROUND(
+        (
+          (SUM(bs.hits) + SUM(bs.walks) + SUM(bs.hit_by_pitch))::DECIMAL / NULLIF(SUM(bs.at_bats) + SUM(bs.walks) + SUM(bs.hit_by_pitch) + SUM(bs.sacrifice_flies), 0)
+        ) + (
+          (SUM(bs.singles) + 2 * SUM(bs.doubles) + 3 * SUM(bs.triples) + 4 * SUM(bs.home_runs))::DECIMAL / NULLIF(SUM(bs.at_bats), 0)
+        ),
+        3
+      ) AS on_base_plus_slugging
+    FROM batting_stats bs
+    JOIN players p ON bs.player_id = p.player_id
+    JOIN games g ON bs.game_id = g.game_id
+    WHERE bs.season = 2024
+      AND LOWER(g.game_type) = 'regular'
+    GROUP BY bs.player_id, p.first_name, p.last_name, bs.season, bs.team_id
+    HAVING SUM(bs.plate_appearances) >= 502
+    ORDER BY on_base_plus_slugging DESC
+    LIMIT 20

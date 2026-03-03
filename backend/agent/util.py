@@ -3,8 +3,8 @@ from langchain_core.messages import BaseMessage
 # from loguru import logger
 from sqlalchemy import text
 
-from backend.agent.state import State
-from backend.database.db_connect import DBConnector
+from agent.state import State
+from database.db_connect import DBConnector
 
 def validate_sql(query: str, db_connector: DBConnector):
     pass
@@ -51,5 +51,3 @@ def get_chat_history(messages: list[BaseMessage], n: int=10):
         [f"{msg.type.upper()}: {msg.content}" for msg in messages[-n:]]
     )
 
-# def format_sql_execution_result(result: pd.DataFrame):
-#     return result.to_dict(orient="records")

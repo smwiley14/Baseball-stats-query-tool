@@ -103,23 +103,19 @@ class DBConnector:
             if hasattr(self, 'database'):
                 db_name = self.database
             else:
-                # Extract from connection string
-                # Format: postgresql://user:pass@host:port/dbname
                 db_name = self.connection_string.split('/')[-1].split('?')[0]
             
             # Get all schemas
             schemas = inspector.get_schema_names()
             
-            # Build schema structure
             schema_dict = {}
             for schema_name in schemas:
                 # Skip system schemas
                 if schema_name in ['information_schema', 'pg_catalog', 'pg_toast']:
                     continue
                 
-                # Get tables in this schema
                 tables = inspector.get_table_names(schema=schema_name)
-                if tables:  # Only include schemas with tables
+                if tables:  
                     schema_dict[schema_name] = tables
             
             self._database_schema = {db_name: schema_dict}

@@ -20,10 +20,10 @@ os.environ.setdefault("LANGCHAIN_PROJECT", "Baseball-Stats-Agent")
 # LangSmith API key should be in .env as LANGCHAIN_API_KEY
 
 from langchain_core.messages import HumanMessage
-from backend.database.db_connect import DBConnector
-from backend.knowledge.vector_store import VectorStore
-from backend.agent.agent import create_graph
-from backend.agent.state import State
+from database.db_connect import DBConnector
+from knowledge.vector_store import VectorStore
+from agent.agent import create_graph
+from agent.state import State
 
 def quick_test(query: str = "How many players are in the database?"):
     """Quick test function."""

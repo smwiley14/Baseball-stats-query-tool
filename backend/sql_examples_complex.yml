@@ -1,0 +1,41 @@
+best_seasons_by_ops:
+  WITH season_games AS (
+      SELECT season,
+            COUNT(DISTINCT game_id) / COUNT(DISTINCT home_team_id) AS team_games
+      FROM games
+      WHERE LOWER(game_type) = 'regular'
+      GROUP BY season
+  )
+
+  SELECT     
+      p.first_name || ' ' || p.last_name AS player_name,
+      bs.season,
+      ROUND(
+          (SUM(bs.hits) + SUM(bs.walks) + SUM(bs.hit_by_pitch))::DECIMAL 
+          / NULLIF(SUM(bs.at_bats) + SUM(bs.walks) + SUM(bs.hit_by_pitch) + SUM(bs.sacrifice_flies), 0)
+          +
+          (SUM(bs.singles) + 2*SUM(bs.doubles) + 3*SUM(bs.triples) + 4*SUM(bs.home_runs))::DECIMAL 
+          / NULLIF(SUM(bs.at_bats), 0),
+      3) AS ops
+  FROM batting_stats bs
+  JOIN games g 
+      ON bs.game_id = g.game_id
+  JOIN players p 
+      ON bs.player_id = p.player_id
+  JOIN season_games sg 
+      ON sg.season = bs.season
+  JOIN teams t 
+      ON g.home_team_id = t.team_id
+  WHERE LOWER(g.game_type) = 'regular'
+    AND t.league IN ('AL','NL')
+  GROUP BY 
+      p.player_id,
+      p.first_name,
+      p.last_name,
+      bs.season,
+      sg.team_games
+  HAVING 
+      SUM(bs.at_bats) + SUM(bs.walks) + SUM(bs.hit_by_pitch) + SUM(bs.sacrifice_flies)
+      >= ROUND(3.1 * sg.team_games)
+  ORDER BY ops DESC
+  LIMIT 10;

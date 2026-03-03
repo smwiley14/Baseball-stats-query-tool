@@ -1,0 +1,426 @@
+query_types:
+  - stat_lookup
+  - comparison
+  - matchups
+  - ranking
+  - trend
+  - splits
+  - situational
+  - other
+
+
+parameters:
+  - entity_type:
+    - player
+    - team
+    - game
+    - league
+  - entities
+  - metric_set
+  - time_range
+  - group_by
+  - filters
+  - sort
+  - limit
+
+parameter_options:
+  entity_type:
+    - player
+    - team
+    - game
+    - league
+  metric_set:
+    batting_counting:
+      - games
+      - plate_appearances
+      - at_bats
+      - hits
+      - singles
+      - doubles
+      - triples
+      - home_runs
+      - runs
+      - rbis
+      - walks
+      - strikeouts
+      - stolen_bases
+      - caught_stealing
+      - hit_by_pitch
+      - sacrifice_hits
+      - sacrifice_flies
+      - grounded_into_double_play
+    batting_rate:
+      - batting_average
+      - on_base_percentage
+      - slugging_percentage
+      - ops
+    pitching_counting:
+      - outs_pitched
+      - innings_pitched
+      - batters_faced
+      - hits_allowed
+      - home_runs_allowed
+      - runs_allowed
+      - earned_runs
+      - walks_allowed
+      - strikeouts
+      - saves
+      - wins
+      - losses
+    pitching_rate:
+      - era
+      - whip
+      - opponent_batting_avg
+      - k_per_9
+      - bb_per_9
+    event_level:
+      - event_code
+      - event_text
+      - inning
+      - outs
+      - rbi
+      - batter_dest
+      - pitch_sequence
+  time_range:
+    - single_game
+    - date_range
+    - season
+    - multi_season
+    - career
+    - all_time
+  group_by:
+    - none
+    - game
+    - date
+    - week
+    - month
+    - season
+    - player
+    - team
+    - opponent
+    - batter_hand
+    - pitcher_hand
+    - home_away
+  filters:
+    handedness:
+      - batter_hand = 'L'
+      - batter_hand = 'R'
+      - pitcher_hand = 'L'
+      - pitcher_hand = 'R'
+    venue:
+      - home
+      - away
+    game_type:
+      - regular
+      - postseason
+    situations:
+      - risp
+      - leadoff
+      - inning
+      - outs
+      - score_margin
+    opponents:
+      - opponent_team
+      - opponent_player
+  sort:
+    - metric_desc
+    - metric_asc
+    - date_asc
+    - date_desc
+    - season_asc
+    - season_desc
+  limit:
+    default: 25
+    min: 1
+    max: 200
+
+schema_retrieval_k: 30
+
+query_type_definitions:
+  stat_lookup:
+    description: "Single entity stat request with minimal comparison."
+    intent_signals:
+      - "what is"
+      - "how many"
+      - "show me"
+      - "line"
+      - "stat"
+      - "ops"
+      - "era"
+      - "avg"
+      - "whip"
+      - "for"
+    sql_shape: "single aggregate with direct filters"
+    required_parameters:
+      - entity_type
+      - entities
+      - metric_set
+    optional_parameters:
+      - time_range
+      - filters
+      - group_by
+    default_group_by:
+      - player_id
+    default_limit: 1
+    guidance:
+      - "Prefer direct aggregation from batting_stats or pitching_stats."
+      - "Use events only when split context (for example pitcher_hand) is required."
+      - "If multiple seasons are in scope and user did not ask for per-season, aggregate over full range."
+
+  comparison:
+    description: "Compare the same metric across players, teams, or time windows."
+    intent_signals:
+      - "vs"
+      - "versus"
+      - "compare"
+      - "better"
+      - "between"
+      - "against"
+      - "or"
+    sql_shape: "same metric for 2+ entities/time windows"
+    required_parameters:
+      - metric_set
+      - entities
+    optional_parameters:
+      - time_range
+      - filters
+      - group_by
+    default_group_by:
+      - player_id
+      - season
+    default_limit: 50
+    guidance:
+      - "Keep metric formula identical across compared groups."
+      - "Return side-by-side rows with clear entity labels."
+      - "For rate stats, apply qualification logic when query implies ranking/leaderboard context."
+
+  matchups:
+    description: "Batter vs pitcher or player/team matchup queries."
+    intent_signals:
+      - "matchup"
+      - "against"
+      - "vs pitcher"
+      - "vs team"
+      - "head to head"
+      - "batter vs pitcher"
+      - "faced"
+    sql_shape: "event-driven or opponent-conditioned aggregation"
+    required_parameters:
+      - entities
+      - metric_set
+    optional_parameters:
+      - time_range
+      - filters
+      - group_by
+    default_group_by:
+      - batter_id
+      - pitcher_id
+    default_limit: 100
+    guidance:
+      - "Use events for batter-vs-pitcher specificity."
+      - "Use games plus batting_stats when opponent team context is sufficient."
+      - "Filter to regular season unless the user explicitly requests postseason."
+
+  ranking:
+    description: "Top/Bottom N leaderboard requests."
+    intent_signals:
+      - "top"
+      - "bottom"
+      - "most"
+      - "least"
+      - "leader"
+      - "leaders"
+      - "highest"
+      - "lowest"
+      - "rank"
+    sql_shape: "group aggregate + ORDER BY + LIMIT"
+    required_parameters:
+      - metric_set
+    optional_parameters:
+      - time_range
+      - filters
+      - group_by
+      - limit
+    default_group_by:
+      - player_id
+      - season
+    default_limit: 10
+    guidance:
+      - "Use ORDER BY with explicit direction."
+      - "Apply MLB qualification thresholds for batting/pitching rate stats."
+      - "Do not apply qualification thresholds for counting stats."
+
+  trend:
+    description: "Metric over time for one or more entities."
+    intent_signals:
+      - "trend"
+      - "over time"
+      - "by game"
+      - "by month"
+      - "rolling"
+      - "last"
+      - "since"
+      - "through"
+    sql_shape: "time-bucket aggregation"
+    required_parameters:
+      - metric_set
+      - time_range
+    optional_parameters:
+      - entities
+      - filters
+      - group_by
+    default_group_by:
+      - game_date
+    default_limit: 500
+    guidance:
+      - "Prefer game_date grain, then aggregate to week/month/season when requested."
+      - "Use window functions for rolling stats only when explicitly requested."
+      - "Order chronologically for readability."
+
+  splits:
+    description: "Same metric split by context (handedness, home/away, inning bucket, etc.)."
+    intent_signals:
+      - "split"
+      - "vs lhp"
+      - "vs rhp"
+      - "home/away"
+      - "lefty"
+      - "righty"
+      - "by handedness"
+      - "breakdown"
+    sql_shape: "context-conditioned grouped aggregation"
+    required_parameters:
+      - entities
+      - metric_set
+      - group_by
+    optional_parameters:
+      - time_range
+      - filters
+    default_group_by:
+      - pitcher_hand
+    default_limit: 100
+    guidance:
+      - "For pitcher/batter handedness splits, use events because handedness is event-level."
+      - "Aggregate split numerators/denominators first, then compute derived rates."
+      - "Guard every denominator with NULLIF."
+
+  situational:
+    description: "Conditioned performance by game/inning/base-out state and similar contexts."
+    intent_signals:
+      - "risp"
+      - "late and close"
+      - "inning"
+      - "with runners on"
+      - "bases loaded"
+      - "clutch"
+      - "two outs"
+      - "leadoff"
+    sql_shape: "event-level filtering + grouped aggregation"
+    required_parameters:
+      - metric_set
+      - filters
+    optional_parameters:
+      - entities
+      - time_range
+      - group_by
+    default_group_by:
+      - player_id
+    default_limit: 100
+    guidance:
+      - "Use events table when the situation is derived from play context."
+      - "Explicitly encode situation logic in WHERE clause."
+      - "Prefer deterministic rule definitions over fuzzy interpretation."
+
+  other:
+    description: "Fallback bucket for unsupported or ambiguous requests."
+    intent_signals:
+      - "help"
+      - "explain"
+      - "unknown"
+    sql_shape: "fallback"
+    guidance:
+      - "Ask for clarification when query cannot be mapped to known baseball-stat query shapes."
+      - "Default to simplest stat_lookup interpretation if a likely metric/entity is present."
+
+traditional_batting:
+  description: "Primary batting output profile for player/team batting line responses."
+  columns:
+    - player_id
+    - season
+    - team_id
+    - game_date
+    - plate_appearances
+    - at_bats
+    - runs
+    - hits
+    - singles
+    - doubles
+    - triples
+    - home_runs
+    - rbis
+    - walks
+    - strikeouts
+    - hit_by_pitch
+    - sacrifice_flies
+    - stolen_bases
+    - batting_average
+    - on_base_percentage
+    - slugging_percentage
+    - ops
+
+  
+traditional_pitching:
+  description: "Primary pitching output profile for player/team pitching line responses."
+  columns:
+    - player_id
+    - season
+    - team_id
+    - game_date
+    - innings_pitched
+    - batters_faced
+    - hits_allowed
+    - home_runs_allowed
+    - runs_allowed
+    - earned_runs
+    - walks_allowed
+    - strikeouts
+    - era
+    - whip
+
+game_stats:
+  description: "Game context fields for schedule, score, and game metadata outputs."
+  columns:
+    - game_id
+    - game_date
+    - season
+    - home_team_id
+    - away_team_id
+    - home_score
+    - away_score
+    - game_type
+    - innings
+    - minutes
+
+rate_stat_qualifiers:
+  source_url: "https://www.mlb.com/glossary/standard-stats/rate-stats-qualifiers"
+  mlb_rule_9_22:
+    season_rate_qualifiers:
+      batting:
+        formula: "minimum_PA = 3.1 * scheduled_league_games"
+        rounding: "nearest whole number of plate appearances"
+      pitching:
+        formula: "minimum_IP = 1.0 * scheduled_league_games"
+        rounding: "nearest third of an inning"
+    all_time_rate_qualifiers:
+      batting:
+        - "5000 career at-bats (AL/NL)"
+        - "5000 career at-bats (AL/NL + Negro Leagues combined)"
+        - "1800 career at-bats (Negro Leagues)"
+      pitching:
+        - "2000 career innings pitched (AL/NL)"
+        - "2000 career innings pitched (AL/NL + Negro Leagues combined)"
+        - "600 career innings pitched (Negro Leagues)"
+  sql_implementation_guidance:
+    - "For season or multi-season rate-stat rankings, compute scheduled games in scope from games table and apply MLB thresholds in HAVING before ORDER BY."
+    - "Use qualification filtering only for rate stats (AVG, OBP, SLG, OPS, ERA, WHIP, opponent AVG, etc.), not counting stats."
+    - "When data lacks explicit scheduled games, use the best available season-level team-game proxy from games table and state this assumption in sql_explanation."

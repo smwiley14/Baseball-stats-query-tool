@@ -1,0 +1,642 @@
+DATABASE: retrosheet
+
+SCHEMA: public
+
+TABLE: players
+PRIMARY KEYS: player_id
+COLUMNS:
+  - player_id (VARCHAR(10), NOT NULL)
+  - first_name (VARCHAR(50), NULL)
+  - last_name (VARCHAR(50), NULL)
+  - batting_hand (CHAR(1), NULL)
+  - throwing_hand (CHAR(1), NULL)
+  - created_at (TIMESTAMP, NULL)
+  - updated_at (TIMESTAMP, NULL)
+
+
+TABLE: games
+DESCRIPTION: Comprehensive game information from retrosheet
+PRIMARY KEYS: game_id
+FOREIGN KEYS:
+  - away_finish_pitcher_id -> public.players.player_id
+  - away_start_pitcher_id -> public.players.player_id
+  - away_team_id -> public.teams.team_id
+  - first_base_umpire_id -> public.umpires.umpire_id
+  - game_winning_rbi_id -> public.players.player_id
+  - home_finish_pitcher_id -> public.players.player_id
+  - home_plate_umpire_id -> public.umpires.umpire_id
+  - home_start_pitcher_id -> public.players.player_id
+  - home_team_id -> public.teams.team_id
+  - left_field_umpire_id -> public.umpires.umpire_id
+  - losing_pitcher_id -> public.players.player_id
+  - park_id -> public.parks.park_id
+  - right_field_umpire_id -> public.umpires.umpire_id
+  - save_pitcher_id -> public.players.player_id
+  - second_base_umpire_id -> public.umpires.umpire_id
+  - third_base_umpire_id -> public.umpires.umpire_id
+  - winning_pitcher_id -> public.players.player_id
+COLUMNS:
+  - game_id (VARCHAR(20), NOT NULL)
+  - game_date (DATE, NOT NULL)
+  - season (INTEGER, NULL)
+  - game_number (INTEGER, NULL)
+  - day_of_week (VARCHAR(10), NULL)
+  - start_time (VARCHAR(10), NULL)
+  - daynight (CHAR(1), NULL)
+  - dh_flag (CHAR(1), NULL)
+  - home_team_id (VARCHAR(5), NULL)
+  - away_team_id (VARCHAR(5), NULL)
+  - park_id (VARCHAR(10), NULL)
+  - home_score (INTEGER, NULL)
+  - away_score (INTEGER, NULL)
+  - home_hits (INTEGER, NULL)
+  - away_hits (INTEGER, NULL)
+  - home_errors (INTEGER, NULL)
+  - away_errors (INTEGER, NULL)
+  - home_lob (INTEGER, NULL)
+  - away_lob (INTEGER, NULL)
+  - innings (INTEGER, NULL)
+  - minutes (INTEGER, NULL)
+  - attendance (INTEGER, NULL)
+  - temperature (INTEGER, NULL)
+  - wind_direction (VARCHAR(10), NULL)
+  - wind_speed (INTEGER, NULL)
+  - field_condition (VARCHAR(20), NULL)
+  - precipitation (VARCHAR(20), NULL)
+  - sky (VARCHAR(20), NULL)
+  - winning_pitcher_id (VARCHAR(10), NULL)
+  - losing_pitcher_id (VARCHAR(10), NULL)
+  - save_pitcher_id (VARCHAR(10), NULL)
+  - game_winning_rbi_id (VARCHAR(10), NULL)
+  - home_start_pitcher_id (VARCHAR(10), NULL)
+  - away_start_pitcher_id (VARCHAR(10), NULL)
+  - home_finish_pitcher_id (VARCHAR(10), NULL)
+  - away_finish_pitcher_id (VARCHAR(10), NULL)
+  - home_plate_umpire_id (VARCHAR(10), NULL)
+  - first_base_umpire_id (VARCHAR(10), NULL)
+  - second_base_umpire_id (VARCHAR(10), NULL)
+  - third_base_umpire_id (VARCHAR(10), NULL)
+  - left_field_umpire_id (VARCHAR(10), NULL)
+  - right_field_umpire_id (VARCHAR(10), NULL)
+  - game_type (VARCHAR(20), NULL)
+  - forfeit_flag (CHAR(1), NULL)
+  - suspend_flag (CHAR(1), NULL)
+  - created_at (TIMESTAMP, NULL)
+  - updated_at (TIMESTAMP, NULL)
+
+
+TABLE: teams
+PRIMARY KEYS: team_id
+COLUMNS:
+  - team_id (VARCHAR(5), NOT NULL)
+  - league (CHAR(1), NULL)
+  - city (VARCHAR(50), NULL)
+  - name (VARCHAR(50), NULL)
+  - full_name (VARCHAR(100), NULL)
+  - created_at (TIMESTAMP, NULL)
+
+
+TABLE: umpires
+PRIMARY KEYS: umpire_id
+COLUMNS:
+  - umpire_id (VARCHAR(10), NOT NULL)
+  - name (VARCHAR(100), NULL)
+  - created_at (TIMESTAMP, NULL)
+
+
+TABLE: parks
+PRIMARY KEYS: park_id
+COLUMNS:
+  - park_id (VARCHAR(10), NOT NULL)
+  - name (VARCHAR(100), NULL)
+  - city (VARCHAR(50), NULL)
+  - state (VARCHAR(2), NULL)
+  - country (VARCHAR(50), NULL)
+  - created_at (TIMESTAMP, NULL)
+
+
+TABLE: rosters
+DESCRIPTION: Player-team-season roster information
+PRIMARY KEYS: id
+FOREIGN KEYS:
+  - player_id -> public.players.player_id
+  - team_id -> public.teams.team_id
+COLUMNS:
+  - id (BIGINT, NOT NULL)
+  - player_id (VARCHAR(10), NULL)
+  - team_id (VARCHAR(5), NULL)
+  - season (INTEGER, NOT NULL)
+  - position (VARCHAR(10), NULL)
+  - created_at (TIMESTAMP, NULL)
+
+
+TABLE: player_seasons
+PRIMARY KEYS: id
+FOREIGN KEYS:
+  - player_id -> public.players.player_id
+  - team_id -> public.teams.team_id
+COLUMNS:
+  - id (BIGINT, NOT NULL)
+  - player_id (VARCHAR(10), NULL)
+  - season (INTEGER, NOT NULL)
+  - team_id (VARCHAR(5), NULL)
+  - games (INTEGER, NULL)
+  - games_started (INTEGER, NULL)
+  - games_pitched (INTEGER, NULL)
+  - games_started_pitcher (INTEGER, NULL)
+  - games_relief (INTEGER, NULL)
+  - games_catcher (INTEGER, NULL)
+  - games_first_base (INTEGER, NULL)
+  - games_second_base (INTEGER, NULL)
+  - games_third_base (INTEGER, NULL)
+  - games_shortstop (INTEGER, NULL)
+  - games_left_field (INTEGER, NULL)
+  - games_center_field (INTEGER, NULL)
+  - games_right_field (INTEGER, NULL)
+  - games_outfield (INTEGER, NULL)
+  - games_designated_hitter (INTEGER, NULL)
+  - games_pinch_hitter (INTEGER, NULL)
+  - games_pinch_runner (INTEGER, NULL)
+  - first_game_date (DATE, NULL)
+  - last_game_date (DATE, NULL)
+  - created_at (TIMESTAMP, NULL)
+
+
+TABLE: events
+DESCRIPTION: Play-by-play event data for each game
+PRIMARY KEYS: event_id
+FOREIGN KEYS:
+  - batter_id -> public.players.player_id
+  - batting_team_id -> public.teams.team_id
+  - fielder_2_id -> public.players.player_id
+  - fielder_3_id -> public.players.player_id
+  - fielder_4_id -> public.players.player_id
+  - fielder_5_id -> public.players.player_id
+  - fielder_6_id -> public.players.player_id
+  - fielder_7_id -> public.players.player_id
+  - fielder_8_id -> public.players.player_id
+  - fielder_9_id -> public.players.player_id
+  - game_id -> public.games.game_id
+  - pitcher_id -> public.players.player_id
+  - responsible_batter_id -> public.players.player_id
+  - responsible_pitcher_id -> public.players.player_id
+  - runner_1_id -> public.players.player_id
+  - runner_2_id -> public.players.player_id
+  - runner_3_id -> public.players.player_id
+COLUMNS:
+  - event_id (BIGINT, NOT NULL)
+  - game_id (VARCHAR(20), NULL)
+  - inning (INTEGER, NOT NULL)
+  - batting_team_id (VARCHAR(5), NULL)
+  - home_away (CHAR(1), NULL)
+  - outs (INTEGER, NULL)
+  - balls (INTEGER, NULL)
+  - strikes (INTEGER, NULL)
+  - pitch_sequence (TEXT, NULL)
+  - away_score (INTEGER, NULL)
+  - home_score (INTEGER, NULL)
+  - batter_id (VARCHAR(10), NULL)
+  - batter_hand (CHAR(1), NULL)
+  - responsible_batter_id (VARCHAR(10), NULL)
+  - responsible_batter_hand (CHAR(1), NULL)
+  - batter_lineup_position (INTEGER, NULL)
+  - batter_fielding_position (INTEGER, NULL)
+  - pitcher_id (VARCHAR(10), NULL)
+  - pitcher_hand (CHAR(1), NULL)
+  - responsible_pitcher_id (VARCHAR(10), NULL)
+  - responsible_pitcher_hand (CHAR(1), NULL)
+  - fielder_2_id (VARCHAR(10), NULL)
+  - fielder_3_id (VARCHAR(10), NULL)
+  - fielder_4_id (VARCHAR(10), NULL)
+  - fielder_5_id (VARCHAR(10), NULL)
+  - fielder_6_id (VARCHAR(10), NULL)
+  - fielder_7_id (VARCHAR(10), NULL)
+  - fielder_8_id (VARCHAR(10), NULL)
+  - fielder_9_id (VARCHAR(10), NULL)
+  - runner_1_id (VARCHAR(10), NULL)
+  - runner_2_id (VARCHAR(10), NULL)
+  - runner_3_id (VARCHAR(10), NULL)
+  - event_text (TEXT, NULL)
+  - event_code (INTEGER, NULL)
+  - event_outs (INTEGER, NULL)
+  - ab_flag (CHAR(1), NULL)
+  - hit_code (INTEGER, NULL)
+  - rbi (INTEGER, NULL)
+  - leadoff_flag (CHAR(1), NULL)
+  - pinch_hit_flag (CHAR(1), NULL)
+  - sacrifice_hit_flag (CHAR(1), NULL)
+  - sacrifice_fly_flag (CHAR(1), NULL)
+  - double_play_flag (CHAR(1), NULL)
+  - triple_play_flag (CHAR(1), NULL)
+  - wild_pitch_flag (CHAR(1), NULL)
+  - passed_ball_flag (CHAR(1), NULL)
+  - bunt_flag (CHAR(1), NULL)
+  - foul_flag (CHAR(1), NULL)
+  - batted_ball_code (VARCHAR(10), NULL)
+  - batted_ball_location (TEXT, NULL)
+  - fielding_code (INTEGER, NULL)
+  - errors (INTEGER, NULL)
+  - error_1_fielder (INTEGER, NULL)
+  - error_1_type (INTEGER, NULL)
+  - error_2_fielder (INTEGER, NULL)
+  - error_2_type (INTEGER, NULL)
+  - error_3_fielder (INTEGER, NULL)
+  - error_3_type (INTEGER, NULL)
+  - batter_dest (INTEGER, NULL)
+  - runner_1_dest (INTEGER, NULL)
+  - runner_2_dest (INTEGER, NULL)
+  - runner_3_dest (INTEGER, NULL)
+  - runner_1_stolen_base (CHAR(1), NULL)
+  - runner_2_stolen_base (CHAR(1), NULL)
+  - runner_3_stolen_base (CHAR(1), NULL)
+  - runner_1_caught_stealing (CHAR(1), NULL)
+  - runner_2_caught_stealing (CHAR(1), NULL)
+  - runner_3_caught_stealing (CHAR(1), NULL)
+  - batter_play_text (TEXT, NULL)
+  - runner_1_play_text (TEXT, NULL)
+  - runner_2_play_text (TEXT, NULL)
+  - runner_3_play_text (TEXT, NULL)
+  - putout_1_fielder (INTEGER, NULL)
+  - putout_2_fielder (INTEGER, NULL)
+  - putout_3_fielder (INTEGER, NULL)
+  - assist_1_fielder (INTEGER, NULL)
+  - assist_2_fielder (INTEGER, NULL)
+  - assist_3_fielder (INTEGER, NULL)
+  - assist_4_fielder (INTEGER, NULL)
+  - assist_5_fielder (INTEGER, NULL)
+  - game_new_flag (CHAR(1), NULL)
+  - game_end_flag (CHAR(1), NULL)
+  - created_at (TIMESTAMP, NULL)
+
+
+TABLE: batting_stats
+DESCRIPTION: Game-level batting statistics
+PRIMARY KEYS: id
+FOREIGN KEYS:
+  - game_id -> public.games.game_id
+  - player_id -> public.players.player_id
+  - team_id -> public.teams.team_id
+COLUMNS:
+  - id (BIGINT, NOT NULL)
+  - game_id (VARCHAR(20), NULL)
+  - player_id (VARCHAR(10), NULL)
+  - team_id (VARCHAR(5), NULL)
+  - season (INTEGER, NULL)
+  - game_date (DATE, NULL)
+  - plate_appearances (INTEGER, NULL)
+  - at_bats (INTEGER, NULL)
+  - hits (INTEGER, NULL)
+  - singles (INTEGER, NULL)
+  - doubles (INTEGER, NULL)
+  - triples (INTEGER, NULL)
+  - home_runs (INTEGER, NULL)
+  - runs (INTEGER, NULL)
+  - rbis (INTEGER, NULL)
+  - walks (INTEGER, NULL)
+  - intentional_walks (INTEGER, NULL)
+  - strikeouts (INTEGER, NULL)
+  - hit_by_pitch (INTEGER, NULL)
+  - sacrifice_hits (INTEGER, NULL)
+  - sacrifice_flies (INTEGER, NULL)
+  - stolen_bases (INTEGER, NULL)
+  - caught_stealing (INTEGER, NULL)
+  - grounded_into_double_play (INTEGER, NULL)
+  - reached_on_error (INTEGER, NULL)
+  - batting_average (NUMERIC(5, 3), NULL)
+  - on_base_percentage (NUMERIC(5, 3), NULL)
+  - slugging_percentage (NUMERIC(5, 3), NULL)
+  - ops (NUMERIC(5, 3), NULL)
+  - created_at (TIMESTAMP, NULL)
+
+
+TABLE: fielding_stats
+DESCRIPTION: Game-level fielding statistics
+PRIMARY KEYS: id
+FOREIGN KEYS:
+  - game_id -> public.games.game_id
+  - player_id -> public.players.player_id
+  - team_id -> public.teams.team_id
+COLUMNS:
+  - id (BIGINT, NOT NULL)
+  - game_id (VARCHAR(20), NULL)
+  - player_id (VARCHAR(10), NULL)
+  - team_id (VARCHAR(5), NULL)
+  - position (INTEGER, NULL)
+  - season (INTEGER, NULL)
+  - game_date (DATE, NULL)
+  - putouts (INTEGER, NULL)
+  - assists (INTEGER, NULL)
+  - errors (INTEGER, NULL)
+  - double_plays (INTEGER, NULL)
+  - triple_plays (INTEGER, NULL)
+  - passed_balls (INTEGER, NULL)
+  - wild_pitches (INTEGER, NULL)
+  - stolen_bases_allowed (INTEGER, NULL)
+  - caught_stealing (INTEGER, NULL)
+  - games_started (INTEGER, NULL)
+  - fielding_percentage (NUMERIC(5, 3), NULL)
+  - chances (INTEGER, NULL)
+  - created_at (TIMESTAMP, NULL)
+
+
+TABLE: pitching_stats
+DESCRIPTION: Game-level pitching statistics
+PRIMARY KEYS: id
+FOREIGN KEYS:
+  - game_id -> public.games.game_id
+  - player_id -> public.players.player_id
+  - team_id -> public.teams.team_id
+COLUMNS:
+  - id (BIGINT, NOT NULL)
+  - game_id (VARCHAR(20), NULL)
+  - player_id (VARCHAR(10), NULL)
+  - team_id (VARCHAR(5), NULL)
+  - season (INTEGER, NULL)
+  - game_date (DATE, NULL)
+  - outs_pitched (INTEGER, NULL)
+  - innings_pitched (NUMERIC(4, 1), NULL)
+  - batters_faced (INTEGER, NULL)
+  - hits_allowed (INTEGER, NULL)
+  - doubles_allowed (INTEGER, NULL)
+  - triples_allowed (INTEGER, NULL)
+  - home_runs_allowed (INTEGER, NULL)
+  - runs_allowed (INTEGER, NULL)
+  - earned_runs (INTEGER, NULL)
+  - walks_allowed (INTEGER, NULL)
+  - intentional_walks (INTEGER, NULL)
+  - strikeouts (INTEGER, NULL)
+  - hit_batters (INTEGER, NULL)
+  - wild_pitches (INTEGER, NULL)
+  - balks (INTEGER, NULL)
+  - sacrifice_hits_allowed (INTEGER, NULL)
+  - sacrifice_flies_allowed (INTEGER, NULL)
+  - stolen_bases_allowed (INTEGER, NULL)
+  - caught_stealing (INTEGER, NULL)
+  - passed_balls (INTEGER, NULL)
+  - win (BOOLEAN, NULL)
+  - loss (BOOLEAN, NULL)
+  - save (BOOLEAN, NULL)
+  - game_started (BOOLEAN, NULL)
+  - game_finished (BOOLEAN, NULL)
+  - complete_game (BOOLEAN, NULL)
+  - era (NUMERIC(5, 2), NULL)
+  - whip (NUMERIC(4, 2), NULL)
+  - created_at (TIMESTAMP, NULL)
+
+
+TABLE: game_lineups
+PRIMARY KEYS: game_id, team_id, lineup_position
+FOREIGN KEYS:
+  - game_id -> public.games.game_id
+  - player_id -> public.players.player_id
+  - team_id -> public.teams.team_id
+COLUMNS:
+  - game_id (VARCHAR(20), NOT NULL)
+  - team_id (VARCHAR(5), NOT NULL)
+  - home_away (CHAR(1), NULL)
+  - lineup_position (INTEGER, NOT NULL)
+  - player_id (VARCHAR(10), NULL)
+  - fielding_position (INTEGER, NULL)
+
+
+TABLE: team_game_stats
+PRIMARY KEYS: id
+FOREIGN KEYS:
+  - game_id -> public.games.game_id
+  - team_id -> public.teams.team_id
+COLUMNS:
+  - id (BIGINT, NOT NULL)
+  - game_id (VARCHAR(20), NULL)
+  - team_id (VARCHAR(5), NULL)
+  - home_away (CHAR(1), NULL)
+  - season (INTEGER, NULL)
+  - game_date (DATE, NULL)
+  - inn1 (INTEGER, NULL)
+  - inn2 (INTEGER, NULL)
+  - inn3 (INTEGER, NULL)
+  - inn4 (INTEGER, NULL)
+  - inn5 (INTEGER, NULL)
+  - inn6 (INTEGER, NULL)
+  - inn7 (INTEGER, NULL)
+  - inn8 (INTEGER, NULL)
+  - inn9 (INTEGER, NULL)
+  - inn10 (INTEGER, NULL)
+  - inn11 (INTEGER, NULL)
+  - inn12 (INTEGER, NULL)
+  - inn13 (INTEGER, NULL)
+  - inn14 (INTEGER, NULL)
+  - inn15 (INTEGER, NULL)
+  - inn16 (INTEGER, NULL)
+  - inn17 (INTEGER, NULL)
+  - inn18 (INTEGER, NULL)
+  - inn19 (INTEGER, NULL)
+  - inn20 (INTEGER, NULL)
+  - inn21 (INTEGER, NULL)
+  - inn22 (INTEGER, NULL)
+  - inn23 (INTEGER, NULL)
+  - inn24 (INTEGER, NULL)
+  - inn25 (INTEGER, NULL)
+  - inn26 (INTEGER, NULL)
+  - inn27 (INTEGER, NULL)
+  - inn28 (INTEGER, NULL)
+  - team_pa (INTEGER, NULL)
+  - team_ab (INTEGER, NULL)
+  - team_r (INTEGER, NULL)
+  - team_h (INTEGER, NULL)
+  - team_d (INTEGER, NULL)
+  - team_t (INTEGER, NULL)
+  - team_hr (INTEGER, NULL)
+  - team_rbi (INTEGER, NULL)
+  - team_sh (INTEGER, NULL)
+  - team_sf (INTEGER, NULL)
+  - team_hbp (INTEGER, NULL)
+  - team_w (INTEGER, NULL)
+  - team_iw (INTEGER, NULL)
+  - team_k (INTEGER, NULL)
+  - team_sb (INTEGER, NULL)
+  - team_cs (INTEGER, NULL)
+  - team_gdp (INTEGER, NULL)
+  - team_lob (INTEGER, NULL)
+  - team_ipouts (INTEGER, NULL)
+  - team_bfp (INTEGER, NULL)
+  - team_p_h (INTEGER, NULL)
+  - team_p_d (INTEGER, NULL)
+  - team_p_t (INTEGER, NULL)
+  - team_p_hr (INTEGER, NULL)
+  - team_p_r (INTEGER, NULL)
+  - team_p_er (INTEGER, NULL)
+  - team_p_w (INTEGER, NULL)
+  - team_p_iw (INTEGER, NULL)
+  - team_p_k (INTEGER, NULL)
+  - team_p_hbp (INTEGER, NULL)
+  - team_p_wp (INTEGER, NULL)
+  - team_p_bk (INTEGER, NULL)
+  - team_po (INTEGER, NULL)
+  - team_a (INTEGER, NULL)
+  - team_e (INTEGER, NULL)
+  - team_dp (INTEGER, NULL)
+  - team_tp (INTEGER, NULL)
+  - win (BOOLEAN, NULL)
+  - loss (BOOLEAN, NULL)
+  - tie (BOOLEAN, NULL)
+  - created_at (TIMESTAMP, NULL)
+
+
+TABLE: all_batting_seasons
+DESCRIPTION: VIEW. Player-team-season regular-season batting aggregates with derived AVG/OBP/SLG/OPS.
+PRIMARY KEYS: player_id, team_id, season
+FOREIGN KEYS:
+  - player_id -> public.players.player_id
+  - team_id -> public.teams.team_id
+COLUMNS:
+  - player_id (VARCHAR(10), NULL)
+  - team_id (VARCHAR(5), NULL)
+  - season (INTEGER, NULL)
+  - game_date (DATE, NULL)
+  - plate_appearances (BIGINT, NULL)
+  - at_bats (BIGINT, NULL)
+  - hits (BIGINT, NULL)
+  - singles (BIGINT, NULL)
+  - doubles (BIGINT, NULL)
+  - triples (BIGINT, NULL)
+  - home_runs (BIGINT, NULL)
+  - runs (BIGINT, NULL)
+  - rbis (BIGINT, NULL)
+  - walks (BIGINT, NULL)
+  - intentional_walks (BIGINT, NULL)
+  - strikeouts (BIGINT, NULL)
+  - hit_by_pitch (BIGINT, NULL)
+  - sacrifice_hits (BIGINT, NULL)
+  - sacrifice_flies (BIGINT, NULL)
+  - stolen_bases (BIGINT, NULL)
+  - caught_stealing (BIGINT, NULL)
+  - grounded_into_double_play (BIGINT, NULL)
+  - reached_on_error (BIGINT, NULL)
+  - batting_average (NUMERIC(5,3), NULL)
+  - on_base_percentage (NUMERIC(5,3), NULL)
+  - slugging_percentage (NUMERIC(5,3), NULL)
+  - ops (NUMERIC(5,3), NULL)
+
+
+TABLE: qualified_batting_seasons
+DESCRIPTION: VIEW. Same shape as all_batting_seasons but filtered to qualified hitters (PA >= 3.1 * team games).
+PRIMARY KEYS: player_id, team_id, season
+FOREIGN KEYS:
+  - player_id -> public.players.player_id
+  - team_id -> public.teams.team_id
+COLUMNS:
+  - player_id (VARCHAR(10), NULL)
+  - team_id (VARCHAR(5), NULL)
+  - season (INTEGER, NULL)
+  - game_date (DATE, NULL)
+  - plate_appearances (BIGINT, NULL)
+  - at_bats (BIGINT, NULL)
+  - hits (BIGINT, NULL)
+  - singles (BIGINT, NULL)
+  - doubles (BIGINT, NULL)
+  - triples (BIGINT, NULL)
+  - home_runs (BIGINT, NULL)
+  - runs (BIGINT, NULL)
+  - rbis (BIGINT, NULL)
+  - walks (BIGINT, NULL)
+  - intentional_walks (BIGINT, NULL)
+  - strikeouts (BIGINT, NULL)
+  - hit_by_pitch (BIGINT, NULL)
+  - sacrifice_hits (BIGINT, NULL)
+  - sacrifice_flies (BIGINT, NULL)
+  - stolen_bases (BIGINT, NULL)
+  - caught_stealing (BIGINT, NULL)
+  - grounded_into_double_play (BIGINT, NULL)
+  - reached_on_error (BIGINT, NULL)
+  - batting_average (NUMERIC(5,3), NULL)
+  - on_base_percentage (NUMERIC(5,3), NULL)
+  - slugging_percentage (NUMERIC(5,3), NULL)
+  - ops (NUMERIC(5,3), NULL)
+
+
+TABLE: all_pitching_seasons
+DESCRIPTION: VIEW. Player-team-season regular-season pitching aggregates with ERA/WHIP/opponent AVG/K9/BB9.
+PRIMARY KEYS: player_id, team_id, season
+FOREIGN KEYS:
+  - player_id -> public.players.player_id
+  - team_id -> public.teams.team_id
+COLUMNS:
+  - player_id (VARCHAR(10), NULL)
+  - team_id (VARCHAR(5), NULL)
+  - season (INTEGER, NULL)
+  - first_game (DATE, NULL)
+  - last_game (DATE, NULL)
+  - outs_pitched (BIGINT, NULL)
+  - innings_pitched (NUMERIC(10,1), NULL)
+  - batters_faced (BIGINT, NULL)
+  - hits_allowed (BIGINT, NULL)
+  - doubles_allowed (BIGINT, NULL)
+  - triples_allowed (BIGINT, NULL)
+  - home_runs_allowed (BIGINT, NULL)
+  - runs_allowed (BIGINT, NULL)
+  - earned_runs (BIGINT, NULL)
+  - walks_allowed (BIGINT, NULL)
+  - intentional_walks (BIGINT, NULL)
+  - strikeouts (BIGINT, NULL)
+  - hit_batters (BIGINT, NULL)
+  - wild_pitches (BIGINT, NULL)
+  - balks (BIGINT, NULL)
+  - sacrifice_hits_allowed (BIGINT, NULL)
+  - sacrifice_flies_allowed (BIGINT, NULL)
+  - stolen_bases_allowed (BIGINT, NULL)
+  - caught_stealing (BIGINT, NULL)
+  - passed_balls (BIGINT, NULL)
+  - wins (BIGINT, NULL)
+  - losses (BIGINT, NULL)
+  - saves (BIGINT, NULL)
+  - games_started (BIGINT, NULL)
+  - complete_games (BIGINT, NULL)
+  - era (NUMERIC(5,2), NULL)
+  - whip (NUMERIC(5,3), NULL)
+  - opponent_batting_avg (NUMERIC(5,3), NULL)
+  - k_per_9 (NUMERIC(5,2), NULL)
+  - bb_per_9 (NUMERIC(5,2), NULL)
+
+
+TABLE: qualified_pitching_seasons
+DESCRIPTION: VIEW. Same shape as all_pitching_seasons but filtered to qualified pitchers (outs_pitched >= 3 * team games).
+PRIMARY KEYS: player_id, team_id, season
+FOREIGN KEYS:
+  - player_id -> public.players.player_id
+  - team_id -> public.teams.team_id
+COLUMNS:
+  - player_id (VARCHAR(10), NULL)
+  - team_id (VARCHAR(5), NULL)
+  - season (INTEGER, NULL)
+  - first_game (DATE, NULL)
+  - last_game (DATE, NULL)
+  - outs_pitched (BIGINT, NULL)
+  - innings_pitched (NUMERIC(10,1), NULL)
+  - batters_faced (BIGINT, NULL)
+  - hits_allowed (BIGINT, NULL)
+  - doubles_allowed (BIGINT, NULL)
+  - triples_allowed (BIGINT, NULL)
+  - home_runs_allowed (BIGINT, NULL)
+  - runs_allowed (BIGINT, NULL)
+  - earned_runs (BIGINT, NULL)
+  - walks_allowed (BIGINT, NULL)
+  - intentional_walks (BIGINT, NULL)
+  - strikeouts (BIGINT, NULL)
+  - hit_batters (BIGINT, NULL)
+  - wild_pitches (BIGINT, NULL)
+  - balks (BIGINT, NULL)
+  - sacrifice_hits_allowed (BIGINT, NULL)
+  - sacrifice_flies_allowed (BIGINT, NULL)
+  - stolen_bases_allowed (BIGINT, NULL)
+  - caught_stealing (BIGINT, NULL)
+  - passed_balls (BIGINT, NULL)
+  - wins (BIGINT, NULL)
+  - losses (BIGINT, NULL)
+  - saves (BIGINT, NULL)
+  - games_started (BIGINT, NULL)
+  - complete_games (BIGINT, NULL)
+  - era (NUMERIC(5,2), NULL)
+  - whip (NUMERIC(5,3), NULL)
+  - opponent_batting_avg (NUMERIC(5,3), NULL)
+  - k_per_9 (NUMERIC(5,2), NULL)
+  - bb_per_9 (NUMERIC(5,2), NULL)

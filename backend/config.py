@@ -4,6 +4,9 @@ from pathlib import Path
 
 import yaml
 from langchain_core.prompts import ChatPromptTemplate
+# from pydantic import BaseModel
+# from typing import List, Dict, Any
+
 
 # Get project root (assuming this file is in backend/)
 _PROJECT_ROOT = Path(__file__).parent.parent

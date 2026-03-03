@@ -351,7 +351,7 @@ class DataDictionary(BaseModel):
         """Load data dictionary from a YAML file. Supports both 'databases' structure and flat db_dict format."""
         _PROJECT_ROOT = Path(__file__).parent.parent.parent
         if file_path is None:
-            file_path = _PROJECT_ROOT / "backend" / "config" / "db_dict.yml"
+            file_path = _PROJECT_ROOT  / "configs" / "db_dict.yml"
         file_path = Path(file_path)
 
         if not file_path.exists():
