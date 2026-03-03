@@ -3,16 +3,12 @@ export interface Config {
   environment: 'development' | 'production'
 }
 
-// Get environment from Vite's import.meta.env
 const getEnvironment = (): 'development' | 'production' => {
-  // Vite uses import.meta.env.MODE which is 'development' or 'production'
-  // import.meta.env.PROD is true in production builds
   return import.meta.env.PROD ? 'production' : 'development'
 }
 
 const environment = getEnvironment()
 
-// Configuration based on environment
 const configs: Record<'development' | 'production', Config> = {
   development: {
     apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8000',

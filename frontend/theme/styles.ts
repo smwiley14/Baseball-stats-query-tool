@@ -2,88 +2,72 @@ import { createTheme, Theme } from '@mui/material/styles'
 
 export const darkTheme: Theme = createTheme({
   palette: {
-    mode: 'dark',
+    mode: 'light',
     primary: {
-      main: '#19c37d', // Keep the green for consistency
-      light: '#4dd4a0',
-      dark: '#138f5e',
+      main: '#0f62fe',
+      light: '#4f87ff',
+      dark: '#0043ce',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#ab68ff', // Keep the purple for consistency
-      light: '#c495ff',
-      dark: '#8a4fd9',
-      contrastText: '#ffffff',
+      main: '#3a3f4b',
+      light: '#636a79',
+      dark: '#232833',
+      contrastText: '#f7f9fc',
     },
     background: {
-      default: '#1a1a1f', // Very dark gray/charcoal
-      paper: '#25252d', // Slightly lighter for cards/containers
+      default: '#f2f6ff',
+      paper: '#ffffff',
     },
     text: {
-      primary: '#e5e5e6', // Light gray for primary text
-      secondary: '#9ca3af', // Medium gray for secondary text
+      primary: '#131722',
+      secondary: '#5d6472',
     },
-    divider: '#2d2d35', // Subtle divider color
+    divider: '#d4ddee',
     action: {
-      hover: 'rgba(255, 255, 255, 0.08)', // Subtle hover effect
-      selected: 'rgba(255, 255, 255, 0.12)',
+      hover: 'rgba(15, 98, 254, 0.06)',
+      selected: 'rgba(15, 98, 254, 0.12)',
     },
   },
   typography: {
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
-    h1: {
-      color: '#e5e5e6',
-    },
-    h2: {
-      color: '#e5e5e6',
-    },
-    h3: {
-      color: '#e5e5e6',
-    },
-    h4: {
-      color: '#e5e5e6',
-    },
-    h5: {
-      color: '#e5e5e6',
-    },
-    h6: {
-      color: '#e5e5e6',
-    },
-    body1: {
-      color: '#e5e5e6',
-    },
-    body2: {
-      color: '#9ca3af',
-    },
+    fontFamily: '"Manrope", "Avenir Next", "IBM Plex Sans", "Segoe UI", sans-serif',
+    h1: { color: '#131722' },
+    h2: { color: '#131722' },
+    h3: { color: '#131722' },
+    h4: { color: '#131722' },
+    h5: { color: '#131722' },
+    h6: { color: '#131722' },
+    body1: { color: '#131722' },
+    body2: { color: '#5d6472' },
   },
   components: {
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: '#25252d',
-          borderBottom: '1px solid #2d2d35',
+          backgroundColor: '#ffffff',
+          borderBottom: '1px solid #d8deea',
         },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          backgroundColor: '#25252d',
-          border: '1px solid #2d2d35',
+          backgroundColor: '#ffffff',
+          border: '1px solid #d8deea',
         },
       },
     },
     MuiTableContainer: {
       styleOverrides: {
         root: {
-          backgroundColor: 'transparent',
+          backgroundColor: '#ffffff',
         },
       },
     },
     MuiTableHead: {
       styleOverrides: {
         root: {
-          backgroundColor: '#1a1a1f',
+          backgroundColor: '#f4f7ff',
         },
       },
     },
@@ -91,7 +75,7 @@ export const darkTheme: Theme = createTheme({
       styleOverrides: {
         root: {
           '&:hover': {
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            backgroundColor: 'rgba(15, 98, 254, 0.03)',
           },
         },
       },
@@ -99,19 +83,19 @@ export const darkTheme: Theme = createTheme({
     MuiTableCell: {
       styleOverrides: {
         root: {
-          borderColor: '#2d2d35',
+          borderColor: '#d8deea',
         },
       },
     },
     MuiChip: {
       styleOverrides: {
         root: {
-          backgroundColor: '#25252d',
-          border: '1px solid #2d2d35',
-          color: '#e5e5e6',
+          backgroundColor: '#ffffff',
+          border: '1px solid #d8deea',
+          color: '#131722',
           '&:hover': {
-            backgroundColor: '#2d2d35',
-            borderColor: '#3d3d45',
+            backgroundColor: '#f6f9ff',
+            borderColor: '#bfd0ff',
           },
         },
       },
@@ -122,19 +106,19 @@ export const darkTheme: Theme = createTheme({
           '& .MuiOutlinedInput-root': {
             backgroundColor: 'transparent',
             '& fieldset': {
-              borderColor: '#2d2d35',
+              borderColor: '#d8deea',
             },
             '&:hover fieldset': {
-              borderColor: '#3d3d45',
+              borderColor: '#bfd0ff',
             },
             '&.Mui-focused fieldset': {
-              borderColor: '#19c37d',
+              borderColor: '#0f62fe',
             },
           },
           '& .MuiInputBase-input': {
-            color: '#e5e5e6',
+            color: '#131722',
             '&::placeholder': {
-              color: '#9ca3af',
+              color: '#5d6472',
               opacity: 1,
             },
           },
