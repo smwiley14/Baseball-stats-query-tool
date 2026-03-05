@@ -11,3 +11,7 @@ logs/
 *.log.*.*.*.*.*.*.*
 .env
 delete.py
+*_pycache*
+/backend/.langgraph_api/*
+.venv
+/backend/venv
