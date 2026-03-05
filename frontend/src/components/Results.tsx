@@ -142,7 +142,6 @@ const renderResults = (message: ChatMessage, showSupplemental: boolean, onToggle
     )
   }
 
-  // Empty state
   return (
     <Card sx={resultsStyles.resultsCard}>
       <Typography variant="body2" sx={resultsStyles.emptyState}>
@@ -156,7 +155,6 @@ export const Results = ({ messages, loading = false, onExampleClick }: ResultsPr
   const resultsEndRef = useRef<HTMLDivElement>(null)
   const [showSupplemental, setShowSupplemental] = useState(false)
 
-  // Get the latest assistant message (results)
   const latestResult = messages
     .filter(msg => msg.role === 'assistant')
     .slice(-1)[0]

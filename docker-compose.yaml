@@ -13,8 +13,8 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./db/enable_pgvector.sql:/docker-entrypoint-initdb.d/00-enable-pgvector.sql
       - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./db/views.sql:/docker-entrypoint-initdb.d/02-views.sql
 
-      
   pgadmin:
     image: dpage/pgadmin4
     environment:
