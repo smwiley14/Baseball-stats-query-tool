@@ -1,3 +1,6 @@
+from backend.agent.state import State
+
+
 from functools import partial
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages, BaseMessage
@@ -32,17 +35,17 @@ def create_graph(
     Returns:
         Compiled StateGraph ready for execution
     """
-    # Create graph with State schema
-    graph = StateGraph(State)
+    # create graph with State schema
+    graph = StateGraph[State, None, State, State](State)
     
-    # Bind dependencies to node functions
+    # bind dependencies to node functions
+    normalize_input_node = nodes.normalize_input
     relevance_check_node = partial(nodes.check_relevance, vector_store=vector_store)
+    classify_query_type_node = nodes.classify_query_type
+    classify_stat_profile_node = nodes.classify_stat_profile
     sql_generator_node = partial(nodes.sql_generator, vector_store=vector_store)
     sql_executor_node = partial(nodes.sql_executor, db_connector=db_connector)
     sql_return_message_node = partial(nodes.sql_return_message, vector_store=vector_store)
-    classify_query_type_node = nodes.classify_query_type
-    classify_stat_profile_node = nodes.classify_stat_profile
-    normalize_input_node = nodes.normalize_input
     
     # Add nodes
     graph.add_node("normalize_input", normalize_input_node)
@@ -53,11 +56,9 @@ def create_graph(
     graph.add_node("sql_executor", sql_executor_node)
     graph.add_node("sql_return_message", sql_return_message_node)
     
-    # Define flow: START -> normalize_input -> relevance_check -> sql_generator -> sql_executor -> sql_return_message -> END
     graph.add_edge(START, "normalize_input")
     graph.add_edge("normalize_input", "relevance_check")
     
-    # Conditional edge after relevance check
     graph.add_conditional_edges(
         "relevance_check",
         nodes.check_relevance_decision,
@@ -70,7 +71,6 @@ def create_graph(
     graph.add_edge("classify_query_type", "classify_stat_profile")
     graph.add_edge("classify_stat_profile", "sql_generator")
     
-    # Conditional edge after SQL generation
     graph.add_conditional_edges(
         "sql_generator",
         nodes.check_sql_generation,
@@ -80,7 +80,6 @@ def create_graph(
         },
     )
 
-    # Conditional edge after SQL execution
     graph.add_conditional_edges(
         "sql_executor",
         nodes.check_sql_execution,

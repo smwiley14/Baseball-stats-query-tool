@@ -446,18 +446,20 @@ def determine_query_type(state:State):
     query_types_list = ", ".join(query_types)
     query_type_definition_text = json.dumps(query_type_definitions, indent=2)
 
-    system_prompt = f"""You are a query classifier for baseball statistics queries. 
-Your task is to analyze the user's query and determine which query type it matches.
+    system_prompt = f"""
+        You are a query classifier for baseball statistics queries. 
+        Your task is to analyze the user's query and determine which query type it matches.
 
-Available query types from the configuration:
-{query_types_list}
+        Available query types from the configuration:
+        {query_types_list}
 
-Query type definitions:
-{query_type_definition_text}
+        Query type definitions:
+        {query_type_definition_text}
 
-Analyze the user query and respond with ONLY the exact query type name that matches (one of: {query_types_list}).
-If uncertain, respond with "other".
-Do not include explanation or extra text."""
+        Analyze the user query and respond with ONLY the exact query type name that matches (one of: {query_types_list}).
+        If uncertain, respond with "other".
+        Do not include explanation or extra text.
+    """
     
     agent = create_agent(
         model="gpt-4o-mini",
@@ -709,29 +711,103 @@ def check_relevance(state:State, vector_store:VectorStore):
     """Check if the query is relevant and answerable using the knowledge base"""
     _raise_if_cancelled(state)
     query = state.user_query
+
+    # NOTE: PGVector similarity_search returns k docs even for low similarity.
+    # Use scores and a threshold to avoid marking unrelated queries as relevant.
+    RELEVANCE_DISTANCE_THRESHOLD = 0.4
+    RELEVANCE_SCORE_THRESHOLD = 0.45
     
     # Search for relevant schema and examples in knowledge base
-    schema_docs = vector_store.vectorstore.similarity_search(
-        query,
-        k=5,
-        filter={"type": "schema"}
-    )
-    
-    example_docs = vector_store.vectorstore.similarity_search(
-        query,
-        k=5,
-        filter={"type": "example"}
-    )
+    if hasattr(vector_store.vectorstore, "similarity_search_with_relevance_scores"):
+        schema_results = vector_store.vectorstore.similarity_search_with_relevance_scores(
+            query,
+            k=5,
+            filter={"type": "schema"}
+        )
+        example_results = vector_store.vectorstore.similarity_search_with_relevance_scores(
+            query,
+            k=5,
+            filter={"type": "example"}
+        )
+        score_is_similarity = True
+    elif hasattr(vector_store.vectorstore, "similarity_search_with_score"):
+        schema_results = vector_store.vectorstore.similarity_search_with_score(
+            query,
+            k=5,
+            filter={"type": "schema"}
+        )
+        example_results = vector_store.vectorstore.similarity_search_with_score(
+            query,
+            k=5,
+            filter={"type": "example"}
+        )
+        score_is_similarity = False
+    else:
+        schema_docs = vector_store.vectorstore.similarity_search(
+            query,
+            k=5,
+            filter={"type": "schema"}
+        )
+        example_docs = vector_store.vectorstore.similarity_search(
+            query,
+            k=5,
+            filter={"type": "example"}
+        )
+        score_is_similarity = None
+        schema_results = []
+        example_results = []
+
+    if schema_results or example_results:
+        schema_docs = [doc for doc, _score in schema_results]
+        example_docs = [doc for doc, _score in example_results]
+    else:
+        schema_docs = schema_docs if "schema_docs" in locals() else []
+        example_docs = example_docs if "example_docs" in locals() else []
+
+    if score_is_similarity is True:
+        best_schema_score = max((score for _doc, score in schema_results), default=None)
+        best_example_score = max((score for _doc, score in example_results), default=None)
+        best_score = max(
+            (score for score in [best_schema_score, best_example_score] if score is not None),
+            default=None,
+        )
+        is_relevant = best_score is not None and best_score >= RELEVANCE_SCORE_THRESHOLD
+    elif score_is_similarity is False:
+        best_schema_score = min((score for _doc, score in schema_results), default=None)
+        best_example_score = min((score for _doc, score in example_results), default=None)
+        best_score = min(
+            (score for score in [best_schema_score, best_example_score] if score is not None),
+            default=None,
+        )
+        is_relevant = best_score is not None and best_score <= RELEVANCE_DISTANCE_THRESHOLD
+    else:
+        best_score = None
+        is_relevant = bool(schema_docs or example_docs)
     
     # If we find relevant context, the query is likely answerable
-    if schema_docs or example_docs:
+    if is_relevant:
         return {
-            "relevance": True
+            "relevance": True,
+            "relevance_status": "relevant",
         }
     else:
-        summary = f"Nothing found."
+        if best_score is None and score_is_similarity is None:
+            summary = "No relevance scores available; no relevant context found."
+        elif best_score is None:
+            summary = "No schema or example matches found."
+        elif score_is_similarity is True:
+            summary = (
+                "No sufficiently relevant schema or examples found "
+                f"(best score {best_score:.3f} < {RELEVANCE_SCORE_THRESHOLD})."
+            )
+        else:
+            summary = (
+                "No sufficiently relevant schema or examples found "
+                f"(best distance {best_score:.3f} > {RELEVANCE_DISTANCE_THRESHOLD})."
+            )
         return {
             "relevance": False,
+            "relevance_status": "not_relevant",
             "table_data": None,
             "summary": summary,
             "messages": [AIMessage(content=summary)]
