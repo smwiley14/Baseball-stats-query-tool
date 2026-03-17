@@ -1,0 +1,9 @@
+*.sql
+*.csv
+*.parquet
+*.db
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+.git/

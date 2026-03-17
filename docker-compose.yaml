@@ -41,9 +41,11 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # Initialize from a pg_dump SQL file (runs only on first container init)
+      # Put your dump at: ./db/pg_dump.sql
+      # If your dump already includes extensions (CREATE EXTENSION ...), you can remove 00-enable-pgvector.sql.
       - ./db/enable_pgvector.sql:/docker-entrypoint-initdb.d/00-enable-pgvector.sql
-      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-      - ./db/views.sql:/docker-entrypoint-initdb.d/02-views.sql
+      - ./db/retrosheet.sql:/docker-entrypoint-initdb.d/01-pg_dump.sql
 
   pgadmin:
     image: dpage/pgadmin4

@@ -1,4 +1,4 @@
-import { AppBar, Box, Chip, Toolbar, Typography } from '@mui/material'
+import { AppBar, Box, Toolbar, Typography } from '@mui/material'
 import { headerStyles } from '../themes/styles/header.styles'
 
 export const Header = () => {
