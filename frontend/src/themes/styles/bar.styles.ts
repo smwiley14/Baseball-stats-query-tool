@@ -26,10 +26,10 @@ export const barStyles = {
     borderLeft: '1px solid',
     borderRight: '1px solid',
     borderBottom: '1px solid',
-    borderBottomLeftRadius: '20px',
-    borderBottomRightRadius: '20px',
+    borderBottomLeftRadius: '12px',
+    borderBottomRightRadius: '12px',
     borderColor: 'divider',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.5)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
     '&::-webkit-scrollbar': {
       width: '8px',
     },
@@ -37,10 +37,10 @@ export const barStyles = {
       background: 'transparent',
     },
     '&::-webkit-scrollbar-thumb': {
-      background: '#d1d1d7',
+      background: '#4a4a4a',
       borderRadius: '4px',
       '&:hover': {
-        background: '#9ca3af',
+        background: '#5a5a5a',
       },
     },
   } as SxProps<Theme>,
@@ -59,7 +59,7 @@ export const barStyles = {
   } as SxProps<Theme>,
 
   welcomeEyebrow: {
-    color: '#4f5f80',
+    color: 'text.secondary',
     letterSpacing: '0.08em',
     fontWeight: 700,
     mb: 0.4,
@@ -97,7 +97,7 @@ export const barStyles = {
     backgroundColor: 'background.paper',
     border: '1px solid',
     borderColor: 'divider',
-    borderRadius: '14px',
+    borderRadius: '10px',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     textAlign: 'left',
@@ -105,10 +105,10 @@ export const barStyles = {
     color: 'text.primary',
     fontWeight: 600,
     lineHeight: 1.4,
-    boxShadow: '0 2px 8px rgba(17, 24, 39, 0.04)',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.22)',
     '&:hover': {
-      backgroundColor: '#f5f8ff',
-      borderColor: '#bfd0ff',
+      backgroundColor: 'action.hover',
+      borderColor: 'primary.dark',
       transform: 'translateY(-1px)',
     },
   } as SxProps<Theme>,

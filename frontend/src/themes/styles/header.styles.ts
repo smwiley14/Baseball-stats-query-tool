@@ -5,15 +5,14 @@ export const headerStyles = {
     position: 'sticky',
     top: 0,
     zIndex: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.88)',
-    backdropFilter: 'blur(10px)',
+    backgroundColor: 'background.paper',
     color: 'text.primary',
     border: '1px solid',
     borderColor: 'divider',
     borderBottom: '1px solid',
-    borderTopLeftRadius: '20px',
-    borderTopRightRadius: '20px',
-    boxShadow: 'none',
+    borderTopLeftRadius: '12px',
+    borderTopRightRadius: '12px',
+    boxShadow: '0 6px 16px rgba(0, 0, 0, 0.28)',
   } as SxProps<Theme>,
 
   toolbar: {
@@ -46,10 +45,11 @@ export const headerStyles = {
 
   statusChip: {
     fontWeight: 700,
-    borderRadius: '999px',
-    color: '#0d4fd1',
-    border: '1px solid #bfd0ff',
-    backgroundColor: '#eef4ff',
+    borderRadius: '8px',
+    color: '#ffffff',
+    border: '1px solid',
+    borderColor: 'primary.dark',
+    backgroundColor: 'primary.main',
     '& .MuiChip-label': {
       px: 1.1,
     },

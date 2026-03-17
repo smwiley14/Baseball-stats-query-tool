@@ -1,12 +1,42 @@
 services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: retrosheet-backend
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    depends_on:
+      - postgres
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api}
+    container_name: retrosheet-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
   postgres:
     # Use pgvector-enabled PostgreSQL image for vector similarity search
     image: pgvector/pgvector:pg16
     container_name: retrosheet-postgres
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: baseball
-      POSTGRES_PASSWORD: baseball
-      POSTGRES_DB: retrosheet
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5433:5432"
     volumes:

@@ -4,14 +4,13 @@ export const inputStyles = {
   container: {
     border: '1px solid',
     borderColor: 'divider',
-    backgroundColor: 'rgba(255, 255, 255, 0.88)',
+    backgroundColor: 'background.paper',
     width: '100%',
-    borderRadius: '16px',
+    borderRadius: '12px',
     padding: {
       xs: 1.1,
       sm: 1.3,
     },
-    backdropFilter: 'blur(10px)',
     mb: 1.25,
   } as SxProps<Theme>,
 
@@ -19,15 +18,15 @@ export const inputStyles = {
     display: 'flex',
     gap: 1,
     alignItems: 'center',
-    backgroundColor: '#f7faff',
+    backgroundColor: 'background.default',
     border: '1px solid',
     borderColor: 'divider',
-    borderRadius: '20px',
+    borderRadius: '8px',
     padding: '6px 8px 6px 12px',
     transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
     '&:focus-within': {
       borderColor: 'primary.main',
-      boxShadow: (theme: Theme) => `0 0 0 3px ${theme.palette.primary.main}20`,
+      boxShadow: (theme: Theme) => `0 0 0 3px ${theme.palette.primary.main}30`,
     },
   } as SxProps<Theme>,
 
@@ -49,18 +48,24 @@ export const inputStyles = {
     '& .MuiInputBase-input': {
       padding: '8px 0',
       lineHeight: 1.4,
+      color: 'text.primary',
+      '&::placeholder': {
+        color: 'text.secondary',
+        opacity: 1,
+      },
     },
   } as SxProps<Theme>,
 
   sendButton: {
-    background: 'linear-gradient(135deg, #0f62fe 0%, #1b7bff 100%)',
+    background: 'linear-gradient(135deg, #2f8f46 0%, #3ea85a 100%)',
     color: '#ffffff',
     width: 38,
     height: 38,
     flexShrink: 0,
-    boxShadow: '0 8px 18px rgba(15, 98, 254, 0.25)',
+    borderRadius: '6px',
+    boxShadow: '0 8px 18px rgba(47, 143, 70, 0.25)',
     '&:hover': {
-      background: 'linear-gradient(135deg, #0d57e2 0%, #0f62fe 100%)',
+      background: 'linear-gradient(135deg, #2a7e3d 0%, #2f8f46 100%)',
     },
     '&:disabled': {
       opacity: 0.55,
@@ -88,16 +93,16 @@ export const inputStyles = {
     minWidth: 'auto',
     px: 1.3,
     py: 0.3,
-    borderRadius: '999px',
-    color: '#8b2a2a',
+    borderRadius: '8px',
+    color: '#d9a2a2',
     border: '1px solid',
-    borderColor: '#f2c1c1',
-    backgroundColor: '#fff8f8',
+    borderColor: '#6b3a3a',
+    backgroundColor: '#3c2a2a',
     fontWeight: 700,
     '&:hover': {
-      backgroundColor: '#ffecec',
-      borderColor: '#e7a8a8',
-      color: '#7f2020',
+      backgroundColor: '#4a2f2f',
+      borderColor: '#7a4242',
+      color: '#f0b5b5',
     },
   } as SxProps<Theme>,
 

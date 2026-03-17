@@ -9,11 +9,11 @@ export const Header = () => {
           <Typography variant="h6" component="h1" sx={headerStyles.title}>
             Baseball Stats Search
           </Typography>
-          <Typography variant="body2" sx={headerStyles.subtitle}>
+          {/* <Typography variant="body2" sx={headerStyles.subtitle}>
             Search one question at a time and view a structured result.
-          </Typography>
+          </Typography> */}
         </Box>
-        <Chip label="Search" size="small" sx={headerStyles.statusChip} />
+        {/* <Chip label="Search" size="small" sx={headerStyles.statusChip} /> */}
       </Toolbar>
     </AppBar>
   )

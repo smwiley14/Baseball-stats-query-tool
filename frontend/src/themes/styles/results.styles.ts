@@ -24,31 +24,31 @@ export const resultsStyles = {
 
   resultsCard: {
     backgroundColor: 'background.paper',
-    borderRadius: '18px',
+    borderRadius: '12px',
     padding: {
       xs: 2,
       sm: 2.5,
     },
-    boxShadow: '0 10px 30px rgba(17, 24, 39, 0.06)',
+    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.22)',
     border: '1px solid',
     borderColor: 'divider',
   } as SxProps<Theme>,
 
   queryCard: {
     mb: 1.5,
-    borderRadius: '16px',
+    borderRadius: '10px',
     border: '1px solid',
-    borderColor: '#c9d7fb',
-    backgroundColor: '#f5f8ff',
+    borderColor: 'divider',
+    backgroundColor: 'background.default',
     py: 1.25,
     px: 1.5,
     color: 'text.primary',
     fontWeight: 600,
-    boxShadow: '0 3px 10px rgba(17, 24, 39, 0.04)',
+    boxShadow: '0 3px 10px rgba(0, 0, 0, 0.18)',
   } as SxProps<Theme>,
 
   queryTitle: {
-    color: '#4f5f80',
+    color: 'text.secondary',
     fontSize: '0.72rem',
     letterSpacing: '0.08em',
     fontWeight: 700,
@@ -56,7 +56,7 @@ export const resultsStyles = {
 
   queryDivider: {
     my: 0.6,
-    borderColor: '#dde6fb',
+    borderColor: 'divider',
   } as SxProps<Theme>,
 
   tableContainer: {
@@ -94,7 +94,7 @@ export const resultsStyles = {
 
   tableRow: {
     '&:nth-of-type(even)': {
-      backgroundColor: '#fbfcff',
+      backgroundColor: 'action.hover',
     },
     '&:hover': {
       backgroundColor: 'action.hover',
@@ -145,14 +145,14 @@ export const resultsStyles = {
   } as SxProps<Theme>,
 
   supplementalButton: {
-    borderRadius: '999px',
+    borderRadius: '8px',
     textTransform: 'none',
     fontWeight: 600,
-    borderColor: '#bfd0ff',
+    borderColor: 'primary.dark',
     color: 'primary.main',
     '&:hover': {
       borderColor: 'primary.main',
-      backgroundColor: 'rgba(15, 98, 254, 0.04)',
+      backgroundColor: 'rgba(47, 143, 70, 0.12)',
     },
   } as SxProps<Theme>,
 
