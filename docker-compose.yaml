@@ -12,9 +12,10 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "8000:8000"
     depends_on:
       - postgres
-
   frontend:
     build:
       context: .
@@ -23,7 +24,7 @@ services:
         VITE_API_URL: ${VITE_API_URL:-/api}
     container_name: retrosheet-frontend
     ports:
-      - "80:80"
+      - "3000:80"
     depends_on:
       - backend
 
@@ -46,16 +47,6 @@ services:
       # If your dump already includes extensions (CREATE EXTENSION ...), you can remove 00-enable-pgvector.sql.
       - ./db/enable_pgvector.sql:/docker-entrypoint-initdb.d/00-enable-pgvector.sql
       - ./db/retrosheet.sql:/docker-entrypoint-initdb.d/01-pg_dump.sql
-
-  pgadmin:
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - 5051:80
-    depends_on:
-      - postgres
 
 volumes:
   postgres_data:
