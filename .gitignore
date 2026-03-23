@@ -34,3 +34,7 @@ build/
 # LangGraph API / logs
 .langgraph_api/
 **/.langgraph_api/
+
+
+# sql dump
+db/retrosheet.sql
