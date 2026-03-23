@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from api.routes.main import chat_router
-from knowledge.scripts.init_vector_store import init_knowledge_base
+from knowledge.init.init_vector_store import init_knowledge_base
 router = APIRouter()
 
 app = FastAPI(
