@@ -2,7 +2,7 @@
 
 from database.db_connect import DBConnector
 from knowledge.vector_store import VectorStore
-from knowledge.scripts.init_vector_store import init_knowledge_base
+from knowledge.init.init_vector_store import init_knowledge_base
 from agent.agent import create_graph
 
 
