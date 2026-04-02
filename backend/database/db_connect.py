@@ -50,12 +50,23 @@ class DBConnector:
         if connection_string:
             self.connection_string = connection_string
         else:
-            # Build from individual parameters or env vars
-            self.host = host or os.getenv("POSTGRES_HOST", "localhost")
-            self.port = port or int(os.getenv("POSTGRES_PORT", "5433"))
-            self.user = user or os.getenv("POSTGRES_USER", "baseball")
-            self.password = password or os.getenv("POSTGRES_PASSWORD", "baseball")
-            self.database = database or os.getenv("POSTGRES_DB", "retrosheet")
+            # Build from individual parameters or env vars.
+            # All credentials MUST be supplied via environment variables in production.
+            self.host = host or os.getenv("POSTGRES_HOST") or "localhost"
+            self.port = port or int(os.getenv("POSTGRES_PORT") or "5432")
+            self.user = user or os.getenv("POSTGRES_USER")
+            self.password = password or os.getenv("POSTGRES_PASSWORD")
+            self.database = database or os.getenv("POSTGRES_DB") or os.getenv("POSTGRES_DATABASE")
+
+            missing = [name for name, val in [
+                ("POSTGRES_USER", self.user),
+                ("POSTGRES_PASSWORD", self.password),
+                ("POSTGRES_DB / POSTGRES_DATABASE", self.database),
+            ] if not val]
+            if missing:
+                raise EnvironmentError(
+                    f"Missing required database environment variable(s): {', '.join(missing)}"
+                )
             
             # Build connection string with URL encoding
             self.connection_string = (

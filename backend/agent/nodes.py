@@ -862,9 +862,15 @@ def sql_return_message(state:State, vector_store:VectorStore):
                 "messages": [AIMessage(content=summary)]
             }
     else:
-        # Handle error case
-        error = state.sql_execution_result.get("error", "Unknown error occurred")
-        summary = f"Unable to retrieve results for your query. Error: {error}. Please try rephrasing your question or check your query syntax."
+        # Handle error case — log the full error server-side, return a safe message to the user.
+        import logging as _logging
+        _logger = _logging.getLogger(__name__)
+        raw_error = state.sql_execution_result.get("error", "Unknown error occurred")
+        _logger.error("SQL execution failed: %s", raw_error)
+        summary = (
+            "I was unable to retrieve results for your query. "
+            "Please try rephrasing your question or simplifying the request."
+        )
         return {
             "table_data": None,
             "supplemental_data": supplemental_data,

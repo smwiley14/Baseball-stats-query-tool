@@ -1,5 +1,6 @@
+import logging
+
 from fastapi import FastAPI, APIRouter, Depends, HTTPException
-from sqlalchemy import desc, distinct, func
 from sqlalchemy.orm import Session
 
 from database.db_connect import DBConnector
@@ -7,12 +8,15 @@ from knowledge.vector_store import VectorStore
 from agent.agent import create_graph
 from agent.cancellation import QueryCancelledError, request_cancel, reset_cancel
 from langgraph.checkpoint.memory import MemorySaver
+from api.auth import require_api_key
 from api.chat_types import CancelRequest, CancelResponse, ChatRequest, ChatResponse
 import uuid
 from langchain_core.messages import AIMessage, HumanMessage
 from agent.state import State
 from langgraph.types import Command
-chat_router = APIRouter()
+
+logger = logging.getLogger(__name__)
+chat_router = APIRouter(dependencies=[Depends(require_api_key)])
 
 db_connector = None
 vector_store = None
@@ -31,11 +35,13 @@ def init_components() -> None:
         memory = MemorySaver()
         agent_graph = graph.compile(checkpointer=memory)  # Compile the graph
     except Exception as e:
-        print(f"Error initializing routes: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Failed to initialize application components")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error during initialization. Check server logs.",
+        )
 
-@chat_router.post("/")
-
+@chat_router.post("")
 async def send_message(request: ChatRequest) -> ChatResponse:
     session_id = request.session_id or str(uuid.uuid4())
     try : 
@@ -122,13 +128,16 @@ async def send_message(request: ChatRequest) -> ChatResponse:
             },
         )
     except Exception as e:
-        print(f"Error initializing components: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Unhandled error processing chat request for session %s", session_id)
+        raise HTTPException(
+            status_code=500,
+            detail="An unexpected error occurred. Please try again later.",
+        )
     finally:
         reset_cancel(session_id)
 
 
-@chat_router.post("/cancel/")
+@chat_router.post("/cancel")
 async def cancel_query(request: CancelRequest) -> CancelResponse:
     request_cancel(request.session_id)
     return CancelResponse(status="cancel_requested", session_id=request.session_id)
