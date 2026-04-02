@@ -14,9 +14,11 @@ RUN npm run build
 
 FROM nginx:alpine
 
-COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY frontend/nginx.conf.template /etc/nginx/conf.d/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+# envsubst replaces ${API_KEY} in the template at startup, then launches Nginx.
+# Only substitute API_KEY — leave Nginx's own $variables untouched.
+CMD ["/bin/sh", "-c", "envsubst '${API_KEY}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]

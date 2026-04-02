@@ -1,6 +1,10 @@
+# Database connection is configured entirely via environment variables.
+# This file is kept for reference only — values here are NOT used at runtime.
+# Set the following env vars (see .env.example at the project root):
+#   POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB
 database:
-  host: localhost
-  port: 5433
-  database: retrosheet
-  username: baseball
-  password: baseball
+  host: "REPLACE_WITH_ENV_VAR"
+  port: 5432
+  database: "REPLACE_WITH_ENV_VAR"
+  username: "REPLACE_WITH_ENV_VAR"
+  password: "REPLACE_WITH_ENV_VAR"

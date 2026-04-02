@@ -10,6 +10,9 @@ logs/
 *.log.*.*.*.*.*.*
 *.log.*.*.*.*.*.*.*
 .env
+
+# Claude Code internal worktrees
+.claude/worktrees/
 delete.py
 # Virtual environments
 .venv/
