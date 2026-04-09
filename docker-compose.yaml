@@ -5,19 +5,13 @@ services:
       dockerfile: backend/Dockerfile
     container_name: retrosheet-backend
     env_file:
-      - .env
-    environment:
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_READONLY_USER: ${POSTGRES_READONLY_USER}
-      POSTGRES_READONLY_PASSWORD: ${POSTGRES_READONLY_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      API_KEY: ${API_KEY}
+      - ./backend/.env
     ports:
       # Bind to localhost only — prevents direct external access, host Nginx still reaches it
       - "127.0.0.1:8000:8000"
     depends_on:
       - postgres
+
   frontend:
     build:
       context: .
@@ -25,9 +19,8 @@ services:
       args:
         VITE_API_URL: ${VITE_API_URL:-/api}
     container_name: retrosheet-frontend
-    environment:
-      # Used by envsubst at container startup to inject key into Nginx config
-      API_KEY: ${API_KEY}
+    env_file:
+      - ./frontend/.env
     ports:
       - "127.0.0.1:3000:80"
     depends_on:
@@ -38,21 +31,16 @@ services:
     image: pgvector/pgvector:pg16
     container_name: retrosheet-postgres
     env_file:
-      - .env
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      # Passed through so the init script can create the read-only app user
-      POSTGRES_READONLY_USER: ${POSTGRES_READONLY_USER}
-      POSTGRES_READONLY_PASSWORD: ${POSTGRES_READONLY_PASSWORD}
+      # Admin creds (POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB) and readonly
+      # user creds (POSTGRES_READONLY_USER, POSTGRES_READONLY_PASSWORD) all live here
+      - ./backend/.env
     ports:
       # Bind to localhost only — not reachable from the internet
       - "127.0.0.1:5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       # Initialize from a pg_dump SQL file (runs only on first container init)
-      # Put your dump at: ./db/pg_dump.sql
+      # Put your dump at: ./db/retrosheet.sql
       # If your dump already includes extensions (CREATE EXTENSION ...), you can remove 00-enable-pgvector.sql.
       - ./db/enable_pgvector.sql:/docker-entrypoint-initdb.d/00-enable-pgvector.sql
       - ./db/retrosheet.sql:/docker-entrypoint-initdb.d/01-pg_dump.sql
