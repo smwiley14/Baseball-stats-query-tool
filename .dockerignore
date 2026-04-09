@@ -1,7 +1,15 @@
+# Secrets — never bake these into images
+.env
+**/.env
+*.env
+
+# Data files
 *.sql
 *.csv
 *.parquet
 *.db
+
+# Build artifacts
 __pycache__/
 *.pyc
 .venv/

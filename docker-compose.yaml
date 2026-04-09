@@ -10,7 +10,8 @@ services:
       # Bind to localhost only — prevents direct external access, host Nginx still reaches it
       - "127.0.0.1:8000:8000"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   frontend:
     build:
@@ -37,6 +38,13 @@ services:
     ports:
       # Bind to localhost only — not reachable from the internet
       - "127.0.0.1:5433:5432"
+    healthcheck:
+      # Waits until Postgres is accepting connections before dependents start
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20      # up to 100s — generous for large SQL dump imports
+      start_period: 10s
     volumes:
       - postgres_data:/var/lib/postgresql/data
       # Initialize from a pg_dump SQL file (runs only on first container init)
