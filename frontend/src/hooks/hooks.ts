@@ -54,7 +54,7 @@ export const useHooks = () => {
         setLoading(true)
     
         try {
-          const response = await axios.post(getApiUrl('chat/'), {
+          const response = await axios.post(getApiUrl('chat'), {
             message: userMessage.content,
             session_id: activeSessionId,
           }, {
@@ -121,7 +121,7 @@ export const useHooks = () => {
         return
       }
       try {
-        await axios.post(getApiUrl('chat/cancel/'), { session_id: activeSessionId })
+        await axios.post(getApiUrl('chat/cancel'), { session_id: activeSessionId })
       } catch (error) {
         console.error('Error cancelling query:', error)
       }
