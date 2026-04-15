@@ -718,19 +718,10 @@ def check_relevance(state:State, vector_store:VectorStore):
     RELEVANCE_SCORE_THRESHOLD = 0.45
     
     # Search for relevant schema and examples in knowledge base
-    if hasattr(vector_store.vectorstore, "similarity_search_with_relevance_scores"):
-        schema_results = vector_store.vectorstore.similarity_search_with_relevance_scores(
-            query,
-            k=5,
-            filter={"type": "schema"}
-        )
-        example_results = vector_store.vectorstore.similarity_search_with_relevance_scores(
-            query,
-            k=5,
-            filter={"type": "example"}
-        )
-        score_is_similarity = True
-    elif hasattr(vector_store.vectorstore, "similarity_search_with_score"):
+    # NOTE: similarity_search_with_score is checked first because similarity_search_with_relevance_scores
+    # is inherited from the base VectorStore class and doesn't properly handle the filter kwarg
+    # in langchain_postgres PGVector, silently returning empty results.
+    if hasattr(vector_store.vectorstore, "similarity_search_with_score"):
         schema_results = vector_store.vectorstore.similarity_search_with_score(
             query,
             k=5,

@@ -25,10 +25,13 @@ def init_knowledge_base():
         print("   ✓ Vector store initialized")
 
         # Clear existing collection to remove stale/obsolete embeddings.
+        # NOTE: After delete_collection(), the PGVector object caches the old UUID.
+        # Reinitializing VectorStore forces a fresh collection UUID so add_documents()
+        # inserts into the correct (new) collection.
         print("3. Clearing existing vector collection...")
         try:
             vector_store.vectorstore.delete_collection()
-            vector_store.vectorstore.create_collection()
+            vector_store = VectorStore(db_connector)
             print("   ✓ Collection reset (stale docs removed)")
         except Exception as e:
             print(f"   ⚠ Could not reset collection cleanly: {e}")
