@@ -15,7 +15,7 @@ const configs: Record<'development' | 'production', Config> = {
     environment: 'development',
   },
   production: {
-    apiUrl: import.meta.env.VITE_API_URL || 'https://api.example.com',
+    apiUrl: import.meta.env.VITE_API_URL || '/baseball/api',
     environment: 'production',
   },
 }
