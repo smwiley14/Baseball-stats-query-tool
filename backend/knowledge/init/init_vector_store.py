@@ -24,14 +24,20 @@ def init_knowledge_base():
         vector_store = VectorStore(db_connector)
         print("   ✓ Vector store initialized")
 
-        # Clear existing collection to remove stale/obsolete embeddings.
-        # NOTE: After delete_collection(), the PGVector object caches the old UUID.
-        # Reinitializing VectorStore forces a fresh collection UUID so add_documents()
-        # inserts into the correct (new) collection.
+        # Clear existing embeddings without deleting the collection.
+        # NOTE: delete_collection() causes a UUID mismatch in langchain_postgres 0.0.17
+        # where add_documents() inserts with the old (deleted) UUID instead of the new one.
+        # Deleting embeddings via SQL preserves the collection UUID so inserts land correctly.
         print("3. Clearing existing vector collection...")
         try:
-            vector_store.vectorstore.delete_collection()
-            vector_store = VectorStore(db_connector)
+            engine = db_connector.get_engine()
+            with engine.begin() as conn:
+                conn.execute(
+                    __import__("sqlalchemy").text(
+                        "DELETE FROM langchain_pg_embedding WHERE collection_id = "
+                        "(SELECT uuid FROM langchain_pg_collection WHERE name = 'nl2sql_embeddings')"
+                    )
+                )
             print("   ✓ Collection reset (stale docs removed)")
         except Exception as e:
             print(f"   ⚠ Could not reset collection cleanly: {e}")
