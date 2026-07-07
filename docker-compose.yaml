@@ -4,6 +4,7 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     container_name: retrosheet-backend
+    restart: unless-stopped
     env_file:
       - ./backend/.env
     ports:
@@ -12,6 +13,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
 
   frontend:
     build:
@@ -20,17 +27,20 @@ services:
       args:
         VITE_API_URL: ${VITE_API_URL:-/baseball/api}
     container_name: retrosheet-frontend
+    restart: unless-stopped
     env_file:
       - ./frontend/.env
     ports:
       - "127.0.0.1:3000:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
   postgres:
     # Use pgvector-enabled PostgreSQL image for vector similarity search
     image: pgvector/pgvector:pg16
     container_name: retrosheet-postgres
+    restart: unless-stopped
     env_file:
       # Admin creds (POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB) and readonly
       # user creds (POSTGRES_READONLY_USER, POSTGRES_READONLY_PASSWORD) all live here
@@ -54,6 +64,12 @@ services:
       - ./db/retrosheet.sql:/docker-entrypoint-initdb.d/01-pg_dump.sql
       # Creates the read-only application user (runs only on first container init)
       - ./db/02-readonly-user.sh:/docker-entrypoint-initdb.d/02-readonly-user.sh
+      # Season-aggregate views the NL2SQL knowledge base and SQL examples rely on.
+      # CREATE OR REPLACE is idempotent whether or not your dump already has these.
+      - ./db/views.sql:/docker-entrypoint-initdb.d/03-views.sql
+      # Pre-creates the pgvector store tables and grants the read-only user scoped
+      # DML on them only — see the script for why this can't just use 02's grants.
+      - ./db/04-vector-store-tables.sh:/docker-entrypoint-initdb.d/04-vector-store-tables.sh
 
 volumes:
   postgres_data:

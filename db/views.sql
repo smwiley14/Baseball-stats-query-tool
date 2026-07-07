@@ -1,4 +1,4 @@
-CREATE VIEW all_batting_seasons AS
+CREATE OR REPLACE VIEW all_batting_seasons AS
     WITH team_games AS (
         SELECT
             season,
@@ -219,7 +219,7 @@ CREATE OR REPLACE VIEW all_pitching_seasons AS
 
 -------------------------------------------------------
 
-CREATE VIEW qualified_batting_seasons AS
+CREATE OR REPLACE VIEW qualified_batting_seasons AS
     WITH team_games AS (
         SELECT
             season,

@@ -714,8 +714,12 @@ def check_relevance(state:State, vector_store:VectorStore):
 
     # NOTE: PGVector similarity_search returns k docs even for low similarity.
     # Use scores and a threshold to avoid marking unrelated queries as relevant.
-    RELEVANCE_DISTANCE_THRESHOLD = 0.4
-    RELEVANCE_SCORE_THRESHOLD = 0.45
+    # 0.4 was too strict: legitimate single-entity lookups (e.g. "how many home runs
+    # did <player> hit in <year>") scored ~0.50 distance and were wrongly rejected,
+    # while off-topic/destructive-sounding queries scored >=0.57. 0.55 keeps the
+    # latter out while letting normal phrasing variance through.
+    RELEVANCE_DISTANCE_THRESHOLD = 0.55
+    RELEVANCE_SCORE_THRESHOLD = 0.35
     
     # Search for relevant schema and examples in knowledge base
     # NOTE: similarity_search_with_score is checked first because similarity_search_with_relevance_scores

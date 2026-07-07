@@ -1,6 +1,9 @@
 """Initialize the vector store with schema documents and SQL examples."""
 
+import os
 from pathlib import Path
+
+from sqlalchemy import text
 
 from database.db_connect import DBConnector
 from knowledge.vector_store import VectorStore
@@ -9,15 +12,47 @@ from knowledge.few_shot_examples import SQLExample
 
 project_root = Path(__file__).parent.parent.parent
 
+
+def _collection_already_populated(db_connector: DBConnector) -> bool:
+    """Check whether the nl2sql_embeddings collection already has documents.
+
+    Avoids re-running (and re-paying for) OpenAI embeddings on every backend
+    restart — only the first boot against a fresh database needs to seed it.
+    """
+    try:
+        with db_connector.get_engine().connect() as conn:
+            count = conn.execute(
+                text(
+                    "SELECT count(*) FROM langchain_pg_embedding e "
+                    "JOIN langchain_pg_collection c ON e.collection_id = c.uuid "
+                    "WHERE c.name = 'nl2sql_embeddings'"
+                )
+            ).scalar()
+            return bool(count)
+    except Exception:
+        # Tables don't exist yet (fresh database) — needs seeding.
+        return False
+
+
 def init_knowledge_base():
-    """Initialize vector store with schema and examples."""
+    """Initialize vector store with schema and examples.
+
+    Skips re-embedding if the collection is already populated, unless
+    FORCE_REINIT_KNOWLEDGE_BASE=true is set in the environment.
+    """
     print("Initializing vector store...")
-    
+
     try:
         print("1. Connecting to database...")
         db_connector = DBConnector()
         print("   ✓ Database connected")
         print(db_connector.get_engine().url)
+
+        force_reinit = os.getenv("FORCE_REINIT_KNOWLEDGE_BASE", "").lower() == "true"
+        if not force_reinit and _collection_already_populated(db_connector):
+            print("   ✓ Vector store already populated — skipping re-embedding "
+                  "(set FORCE_REINIT_KNOWLEDGE_BASE=true to force a rebuild)")
+            return
 
         # Initialize vector store
         print("2. Initializing vector store...")

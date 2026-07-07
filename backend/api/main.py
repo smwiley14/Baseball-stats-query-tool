@@ -42,6 +42,12 @@ app.add_middleware(
 app.include_router(chat_router, prefix="/chat")
 
 
+@app.get("/health")
+def health() -> dict:
+    """Liveness/readiness probe for Docker healthchecks and load balancers."""
+    return {"status": "ok"}
+
+
 @app.on_event("startup")
 def init_kb_on_startup() -> None:
     """Initialize vector store documents when backend starts."""

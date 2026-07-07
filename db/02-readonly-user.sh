@@ -32,6 +32,12 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-S
   END
   \$\$;
 
+  -- Always sync the password to the current env value. This script is safe to
+  -- re-run (e.g. after rotating POSTGRES_READONLY_PASSWORD), and CREATE ... IF
+  -- NOT EXISTS above silently skips password updates for a pre-existing role,
+  -- which would otherwise leave the DB out of sync with .env.
+  ALTER USER "${POSTGRES_READONLY_USER}" WITH PASSWORD '${POSTGRES_READONLY_PASSWORD}';
+
   -- Connect permission
   GRANT CONNECT ON DATABASE "${POSTGRES_DB}" TO "${POSTGRES_READONLY_USER}";
 
