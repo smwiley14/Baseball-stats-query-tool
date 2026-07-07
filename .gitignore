@@ -1,5 +1,6 @@
 data/
-scripts/
+scripts/*
+!scripts/smoke_test.sh
 logs/
 *.log
 *.log.*
