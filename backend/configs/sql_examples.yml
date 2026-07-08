@@ -1,6 +1,71 @@
 # SQL examples for few-shot learning
 # Priority: use season views whenever the question is season/career aggregate oriented.
 # Views used: all_batting_seasons, qualified_batting_seasons, all_pitching_seasons, qualified_pitching_seasons.
+#
+# Some examples below use terse/shorthand phrasing ("Player Name Year", "Most X",
+# "N X games") rather than a full question. These exist so shorthand user input
+# retrieves a close match here instead of only matching the full-sentence phrasing
+# of a similar example - keep both styles for the same underlying query shape.
+
+terse_player_season_lookup:
+  question: "Aaron Judge 2020"
+  sql: |
+    SELECT
+      p.first_name,
+      p.last_name,
+      s.season,
+      t.name AS team_name,
+      s.plate_appearances,
+      s.at_bats,
+      s.hits,
+      s.home_runs,
+      s.rbis,
+      s.walks,
+      s.strikeouts,
+      s.batting_average,
+      s.on_base_percentage,
+      s.slugging_percentage,
+      s.ops
+    FROM all_batting_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
+    WHERE p.first_name = 'Aaron'
+      AND p.last_name = 'Judge'
+      AND s.season = 2020
+
+most_home_runs_career:
+  question: "Most home runs"
+  sql: |
+    -- v_player_career_batting already has first_name/last_name as direct
+    -- columns (one row per player) — no JOIN to players, no table alias.
+    SELECT
+      first_name || ' ' || last_name AS player_name,
+      career_hr
+    FROM v_player_career_batting
+    WHERE career_hr = (SELECT MAX(career_hr) FROM v_player_career_batting)
+    ORDER BY player_name
+
+n_home_run_games:
+  question: "4 home run games"
+  sql: |
+    SELECT
+      p.first_name || ' ' || p.last_name AS player_name,
+      bs.game_date,
+      CASE WHEN bs.team_id = g.home_team_id THEN away_t.name ELSE home_t.name END AS opponent,
+      bs.at_bats,
+      bs.hits,
+      (bs.singles + 2 * bs.doubles + 3 * bs.triples + 4 * bs.home_runs) AS total_bases,
+      bs.runs,
+      bs.rbis,
+      bs.stolen_bases,
+      bs.home_runs
+    FROM batting_stats bs
+    JOIN players p ON bs.player_id = p.player_id
+    JOIN games g ON bs.game_id = g.game_id
+    JOIN teams home_t ON g.home_team_id = home_t.team_id
+    JOIN teams away_t ON g.away_team_id = away_t.team_id
+    WHERE bs.home_runs = 4
+    ORDER BY bs.game_date
 
 player_season_batting_line:
   question: "What were Aaron Judge's batting stats in 2020?"
@@ -113,6 +178,28 @@ top_players_home_runs_season:
     WHERE s.season = 2020
     ORDER BY s.home_runs DESC
     LIMIT 10
+
+most_home_runs_single_game:
+  question: "Who hit the most home runs in a game?"
+  sql: |
+    SELECT
+      p.first_name || ' ' || p.last_name AS player_name,
+      bs.game_date,
+      CASE WHEN bs.team_id = g.home_team_id THEN away_t.name ELSE home_t.name END AS opponent,
+      bs.at_bats,
+      bs.hits,
+      (bs.singles + 2 * bs.doubles + 3 * bs.triples + 4 * bs.home_runs) AS total_bases,
+      bs.runs,
+      bs.rbis,
+      bs.stolen_bases,
+      bs.home_runs
+    FROM batting_stats bs
+    JOIN players p ON bs.player_id = p.player_id
+    JOIN games g ON bs.game_id = g.game_id
+    JOIN teams home_t ON g.home_team_id = home_t.team_id
+    JOIN teams away_t ON g.away_team_id = away_t.team_id
+    WHERE bs.home_runs = (SELECT MAX(home_runs) FROM batting_stats)
+    ORDER BY bs.game_date
 
 top_players_rbis_season:
   question: "Who led MLB in RBIs in 2020?"

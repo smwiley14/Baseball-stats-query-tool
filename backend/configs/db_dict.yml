@@ -640,3 +640,54 @@ COLUMNS:
   - opponent_batting_avg (NUMERIC(5,3), NULL)
   - k_per_9 (NUMERIC(5,2), NULL)
   - bb_per_9 (NUMERIC(5,2), NULL)
+
+
+TABLE: v_player_career_batting
+DESCRIPTION: VIEW. One row per player with career (all-time, all-season) batting totals already aggregated.
+PRIMARY KEYS: player_id
+FOREIGN KEYS:
+  - player_id -> public.players.player_id
+COLUMNS:
+  - player_id (VARCHAR(10), NULL)
+  - first_name (VARCHAR(50), NULL)
+  - last_name (VARCHAR(50), NULL)
+  - career_ab (BIGINT, NULL)
+  - career_h (BIGINT, NULL)
+  - career_hr (BIGINT, NULL)
+  - career_rbi (BIGINT, NULL)
+  - career_r (BIGINT, NULL)
+  - career_w (BIGINT, NULL)
+  - career_k (BIGINT, NULL)
+  - career_sb (BIGINT, NULL)
+  - career_avg (NUMERIC, NULL)
+  - career_obp (NUMERIC, NULL)
+  - career_slg (NUMERIC, NULL)
+  - seasons (BIGINT, NULL)
+  - first_season (INTEGER, NULL)
+  - last_season (INTEGER, NULL)
+
+
+TABLE: v_player_career_pitching
+DESCRIPTION: VIEW. One row per player with career (all-time, all-season) pitching totals already aggregated.
+PRIMARY KEYS: player_id
+FOREIGN KEYS:
+  - player_id -> public.players.player_id
+COLUMNS:
+  - player_id (VARCHAR(10), NULL)
+  - first_name (VARCHAR(50), NULL)
+  - last_name (VARCHAR(50), NULL)
+  - career_ip (NUMERIC, NULL)
+  - career_h (BIGINT, NULL)
+  - career_hr (BIGINT, NULL)
+  - career_r (BIGINT, NULL)
+  - career_er (BIGINT, NULL)
+  - career_w (BIGINT, NULL)
+  - career_k (BIGINT, NULL)
+  - career_wins (BIGINT, NULL)
+  - career_losses (BIGINT, NULL)
+  - career_saves (BIGINT, NULL)
+  - career_era (NUMERIC, NULL)
+  - career_whip (NUMERIC, NULL)
+  - seasons (BIGINT, NULL)
+  - first_season (INTEGER, NULL)
+  - last_season (INTEGER, NULL)
