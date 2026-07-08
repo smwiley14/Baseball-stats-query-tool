@@ -97,7 +97,13 @@ class VectorStore:
             return
         formatted_sql = sqlparse.format(sql_query, reindent=True)
         content = f"Question: {user_query}\n```sql\n{formatted_sql}\n```"
-        doc_id = hashlib.md5((user_query.strip() + sql_query.strip()).encode("utf-8")).hexdigest()
+        # Keyed on the question alone (not question+sql): without an explicit id,
+        # PGVector's add_documents() assigns a random UUID per call, so re-asking
+        # the same question just keeps appending near-duplicate examples forever
+        # instead of replacing the old one — this cluttered retrieval with stale
+        # SQL patterns from earlier prompt/schema iterations. Keying on the
+        # question means the most recent successful attempt always wins.
+        doc_id = hashlib.md5(user_query.strip().encode("utf-8")).hexdigest()
         metadata = {"type": "example", "title": f"generated_{doc_id}"}
         doc = Document(page_content=content, metadata=metadata)
-        self.vectorstore.add_documents([doc])
+        self.vectorstore.add_documents([doc], ids=[doc_id])
