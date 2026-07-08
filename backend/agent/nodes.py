@@ -555,7 +555,7 @@ def sql_generator(state:State, vector_store:VectorStore):
     print(f"Schema context length: {len(schema_context)} characters")
     print(f"User query: {state.user_query}")
     
-    sql_examples_context, examples_found = _get_sql_examples_context(state, vector_store, k=10)
+    sql_examples_context, examples_found = _get_sql_examples_context(state, vector_store, k=5)
 
     print(f"SQL examples found: {examples_found}")
     if examples_found == 0:
