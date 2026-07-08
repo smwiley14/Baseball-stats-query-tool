@@ -2,6 +2,7 @@ import logging
 
 from fastapi import FastAPI, APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from starlette.concurrency import run_in_threadpool
 
 from database.db_connect import DBConnector
 from knowledge.vector_store import VectorStore
@@ -67,8 +68,11 @@ async def send_message(request: ChatRequest) -> ChatResponse:
             "user_query": request.message
         }
         
-        # Invoke the graph
-        result = agent_graph.invoke(initial_state, config=graph_config)
+        # agent_graph.invoke is fully synchronous (blocking DB/HTTP calls all the
+        # way down). Running it directly here would block the single event loop
+        # for the whole request, freezing every other in-flight request
+        # (including /health) until this one finishes. Offload it to a thread.
+        result = await run_in_threadpool(agent_graph.invoke, initial_state, config=graph_config)
         if "__interrupt__" in result:
             interrupt_data = result["__interrupt__"][0].value
             interrupt_message = interrupt_data.get("messages")
