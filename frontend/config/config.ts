@@ -11,7 +11,11 @@ const environment = getEnvironment()
 
 const configs: Record<'development' | 'production', Config> = {
   development: {
-    apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+    // Relative path so requests go through the Vite dev server's /api proxy
+    // (see vite.config.ts), which injects X-API-Key. Hitting the backend's
+    // absolute http://localhost:8000 directly skips that proxy entirely and
+    // the backend rejects the request with 401 for lacking the key.
+    apiUrl: import.meta.env.VITE_API_URL || '/api',
     environment: 'development',
   },
   production: {
