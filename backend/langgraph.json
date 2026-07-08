@@ -5,5 +5,5 @@
   "graphs": {
     "baseball_nl2sql": "langgraph_app:graph"
   },
-  "env": ".env"
+  "env": "../.env"
 }
