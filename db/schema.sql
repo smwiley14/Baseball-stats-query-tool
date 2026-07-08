@@ -583,6 +583,12 @@ CREATE INDEX IF NOT EXISTS idx_team_game_stats_game ON team_game_stats(game_id);
 -- VIEWS for Common Queries
 -- ============================================================================
 
+-- v_player_career_batting and v_player_career_pitching moved to
+-- db/05-materialize-views.sh (as materialized views — recomputing career
+-- totals across all seasons on every query was too slow). That script is
+-- now the single source of truth for their definitions; kept here only as
+-- commented-out reference for the underlying query logic.
+/*
 -- View: Career batting stats by player
 CREATE OR REPLACE VIEW v_player_career_batting AS
 SELECT 
@@ -642,6 +648,7 @@ SELECT
 FROM players p
 LEFT JOIN pitching_stats ps ON p.player_id = ps.player_id
 GROUP BY p.player_id, p.first_name, p.last_name;
+*/
 
 -- View: Season batting leaders
 CREATE OR REPLACE VIEW v_season_batting_leaders AS
@@ -705,6 +712,6 @@ COMMENT ON TABLE batting_stats IS 'Game-level batting statistics';
 COMMENT ON TABLE pitching_stats IS 'Game-level pitching statistics';
 COMMENT ON TABLE fielding_stats IS 'Game-level fielding statistics';
 COMMENT ON TABLE rosters IS 'Player-team-season roster information';
-COMMENT ON VIEW v_player_career_batting IS 'Career batting statistics aggregated by player';
-COMMENT ON VIEW v_player_career_pitching IS 'Career pitching statistics aggregated by player';
+-- v_player_career_batting/v_player_career_pitching comments are set in
+-- db/05-materialize-views.sh, where those views are actually created now.
 

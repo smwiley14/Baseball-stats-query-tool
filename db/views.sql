@@ -1,3 +1,11 @@
+-- all_batting_seasons, all_pitching_seasons, qualified_batting_seasons, and
+-- qualified_pitching_seasons moved to db/05-materialize-views.sh (as
+-- materialized views — re-aggregating the full history on every query was
+-- too slow for career/season-wide questions). That script is now the single
+-- source of truth for their definitions; kept here only as commented-out
+-- reference for the underlying query logic.
+
+/*
 CREATE OR REPLACE VIEW all_batting_seasons AS
     WITH team_games AS (
         SELECT
@@ -444,6 +452,7 @@ CREATE OR REPLACE VIEW qualified_pitching_seasons AS
     HAVING
         -- MLB qualification rule
         SUM(ps.outs_pitched) >= 3 * sg.team_games;
+*/
 
 -------------------------------------------------------
 

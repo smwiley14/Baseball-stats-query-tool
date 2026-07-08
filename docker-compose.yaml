@@ -70,6 +70,10 @@ services:
       # Pre-creates the pgvector store tables and grants the read-only user scoped
       # DML on them only — see the script for why this can't just use 02's grants.
       - ./db/04-vector-store-tables.sh:/docker-entrypoint-initdb.d/04-vector-store-tables.sh
+      # Materializes season/career aggregate views (plain views re-aggregated the
+      # full history on every query — 175s for a career-total lookup). Re-run
+      # db/refresh_materialized_views.sh after loading new data.
+      - ./db/05-materialize-views.sh:/docker-entrypoint-initdb.d/05-materialize-views.sh
 
 volumes:
   postgres_data:
