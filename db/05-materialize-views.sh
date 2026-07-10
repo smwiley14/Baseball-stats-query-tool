@@ -193,9 +193,13 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-'
 
           SUM(ps.passed_balls) AS passed_balls,
 
-          SUM(CASE WHEN ps.win THEN 1 ELSE 0 END) AS wins,
-          SUM(CASE WHEN ps.loss THEN 1 ELSE 0 END) AS losses,
-          SUM(CASE WHEN ps.save THEN 1 ELSE 0 END) AS saves,
+          -- W/L/SV from the games table's authoritative decision columns, not
+          -- pitching_stats.win/loss/save (those flags are set on many pitchers
+          -- per game in the source data, inflating totals ~2x). One pitching_stats
+          -- row per pitcher-game, so counting decision matches is exact.
+          SUM(CASE WHEN g.winning_pitcher_id = ps.player_id THEN 1 ELSE 0 END) AS wins,
+          SUM(CASE WHEN g.losing_pitcher_id = ps.player_id THEN 1 ELSE 0 END) AS losses,
+          SUM(CASE WHEN g.save_pitcher_id = ps.player_id THEN 1 ELSE 0 END) AS saves,
 
           SUM(CASE WHEN ps.game_started THEN 1 ELSE 0 END) AS games_started,
           SUM(CASE WHEN ps.complete_game THEN 1 ELSE 0 END) AS complete_games,
@@ -413,9 +417,13 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-'
 
           SUM(ps.passed_balls) AS passed_balls,
 
-          SUM(CASE WHEN ps.win THEN 1 ELSE 0 END) AS wins,
-          SUM(CASE WHEN ps.loss THEN 1 ELSE 0 END) AS losses,
-          SUM(CASE WHEN ps.save THEN 1 ELSE 0 END) AS saves,
+          -- W/L/SV from the games table's authoritative decision columns, not
+          -- pitching_stats.win/loss/save (those flags are set on many pitchers
+          -- per game in the source data, inflating totals ~2x). One pitching_stats
+          -- row per pitcher-game, so counting decision matches is exact.
+          SUM(CASE WHEN g.winning_pitcher_id = ps.player_id THEN 1 ELSE 0 END) AS wins,
+          SUM(CASE WHEN g.losing_pitcher_id = ps.player_id THEN 1 ELSE 0 END) AS losses,
+          SUM(CASE WHEN g.save_pitcher_id = ps.player_id THEN 1 ELSE 0 END) AS saves,
 
           SUM(CASE WHEN ps.game_started THEN 1 ELSE 0 END) AS games_started,
           SUM(CASE WHEN ps.complete_game THEN 1 ELSE 0 END) AS complete_games,
@@ -534,9 +542,11 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-'
       SUM(ps.earned_runs) as career_er,
       SUM(ps.walks_allowed) as career_w,
       SUM(ps.strikeouts) as career_k,
-      SUM(ps.win::INTEGER) as career_wins,
-      SUM(ps.loss::INTEGER) as career_losses,
-      SUM(ps.save::INTEGER) as career_saves,
+      -- Decision flags come from the games table (see is_win/is_loss/is_save
+      -- in the subquery below) — pitching_stats.win/loss/save is unreliable.
+      SUM(ps.is_win) as career_wins,
+      SUM(ps.is_loss) as career_losses,
+      SUM(ps.is_save) as career_saves,
       CASE WHEN SUM(ps.innings_pitched) > 0
            THEN ROUND((SUM(ps.earned_runs) * 9.0) / SUM(ps.innings_pitched), 2)
            ELSE 0 END as career_era,
@@ -550,7 +560,11 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-'
   LEFT JOIN (
       -- Same regular-season/AL-NL filter as all_pitching_seasons (home
       -- team's league only, matching that view's existing convention).
-      SELECT ps.*
+      SELECT
+          ps.*,
+          (g.winning_pitcher_id = ps.player_id)::INTEGER AS is_win,
+          (g.losing_pitcher_id = ps.player_id)::INTEGER AS is_loss,
+          (g.save_pitcher_id = ps.player_id)::INTEGER AS is_save
       FROM pitching_stats ps
       JOIN games g ON ps.game_id = g.game_id
       JOIN teams t ON g.home_team_id = t.team_id
