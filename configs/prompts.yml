@@ -76,6 +76,25 @@ sql_generator:
       from that row directly — do NOT wrap them in SUM()/AVG() and do NOT add GROUP BY. Aggregation is only
       needed when combining MULTIPLE rows (e.g. a player's multiple stints in one season, or career totals
       across seasons) — never for a plain single-player single-season lookup.
+    - For ANY season-level player leaderboard/ranking question (e.g. "most home runs in a season", "top N
+      qualified OPS seasons", "who led in X in <year>", "best <stat> seasons of all time"), always return the
+      full season stat line for every row, not just the one metric requested — every column below is already
+      on the season view, no recomputation needed:
+      * Batters (all_batting_seasons/qualified_batting_seasons): player_name, season, team_name,
+        plate_appearances, at_bats, runs, hits, home_runs, rbis, walks, strikeouts, stolen_bases,
+        batting_average, on_base_percentage, slugging_percentage, ops.
+      * Pitchers (all_pitching_seasons/qualified_pitching_seasons): player_name, season, team_name,
+        innings_pitched, wins, losses, saves, strikeouts, walks_allowed, hits_allowed, earned_runs, era, whip,
+        k_per_9, bb_per_9.
+      This applies whether ranked by a counting stat (home runs, RBIs, strikeouts) or a rate stat (OPS, ERA,
+      batting average) — the full line goes out either way, ordered by whatever the question asked for.
+    - Same rule for TEAM-level stat/leaderboard questions ("how many home runs did each team hit", "which teams
+      had the best ERA"): return the full team line (SUM the batter/pitcher columns above, grouped by team_id,
+      team_name, season), not just the one requested metric.
+    - For innings pitched ALWAYS select/SUM the `innings_pitched` column directly (it is already in innings, e.g.
+      77.3). NEVER display `outs_pitched` as innings — outs_pitched is 3x innings and only exists for internal
+      ERA/WHIP math. If you must derive innings from outs, always wrap it as ROUND(SUM(outs_pitched)/3.0, 1) so
+      the result is a clean one-decimal value, never a long repeating decimal.
     - v_player_career_batting and v_player_career_pitching already have first_name/last_name as direct columns
       (one row per player). Select them directly with no JOIN to players and no table alias — do not add
       "p." or similar prefixes for these two views.

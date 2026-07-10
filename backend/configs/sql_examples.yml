@@ -17,11 +17,13 @@ terse_player_season_lookup:
       t.name AS team_name,
       s.plate_appearances,
       s.at_bats,
+      s.runs,
       s.hits,
       s.home_runs,
       s.rbis,
       s.walks,
       s.strikeouts,
+      s.stolen_bases,
       s.batting_average,
       s.on_base_percentage,
       s.slugging_percentage,
@@ -77,11 +79,13 @@ player_season_batting_line:
       t.name AS team_name,
       s.plate_appearances,
       s.at_bats,
+      s.runs,
       s.hits,
       s.home_runs,
       s.rbis,
       s.walks,
       s.strikeouts,
+      s.stolen_bases,
       s.batting_average,
       s.on_base_percentage,
       s.slugging_percentage,
@@ -169,12 +173,29 @@ player_career_pitching_totals:
 top_players_home_runs_season:
   question: "Who hit the most home runs in 2020?"
   sql: |
+    -- Season leaderboard: always return the full stat line, not just the
+    -- one metric asked about — plate_appearances through ops are already
+    -- columns on all_batting_seasons, no recomputation needed.
     SELECT
       p.first_name || ' ' || p.last_name AS player_name,
       s.season,
-      s.home_runs
+      t.name AS team_name,
+      s.plate_appearances,
+      s.at_bats,
+      s.runs,
+      s.hits,
+      s.home_runs,
+      s.rbis,
+      s.walks,
+      s.strikeouts,
+      s.stolen_bases,
+      s.batting_average,
+      s.on_base_percentage,
+      s.slugging_percentage,
+      s.ops
     FROM all_batting_seasons s
     JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
     WHERE s.season = 2020
     ORDER BY s.home_runs DESC
     LIMIT 10
@@ -207,9 +228,23 @@ top_players_rbis_season:
     SELECT
       p.first_name || ' ' || p.last_name AS player_name,
       s.season,
-      s.rbis
+      t.name AS team_name,
+      s.plate_appearances,
+      s.at_bats,
+      s.runs,
+      s.hits,
+      s.home_runs,
+      s.rbis,
+      s.walks,
+      s.strikeouts,
+      s.stolen_bases,
+      s.batting_average,
+      s.on_base_percentage,
+      s.slugging_percentage,
+      s.ops
     FROM all_batting_seasons s
     JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
     WHERE s.season = 2020
     ORDER BY s.rbis DESC
     LIMIT 10
@@ -220,9 +255,23 @@ top_players_stolen_bases_season:
     SELECT
       p.first_name || ' ' || p.last_name AS player_name,
       s.season,
-      s.stolen_bases
+      t.name AS team_name,
+      s.plate_appearances,
+      s.at_bats,
+      s.runs,
+      s.hits,
+      s.home_runs,
+      s.rbis,
+      s.walks,
+      s.strikeouts,
+      s.stolen_bases,
+      s.batting_average,
+      s.on_base_percentage,
+      s.slugging_percentage,
+      s.ops
     FROM all_batting_seasons s
     JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
     WHERE s.season = 2020
     ORDER BY s.stolen_bases DESC
     LIMIT 10
@@ -233,9 +282,23 @@ top_players_qualified_ops_season:
     SELECT
       p.first_name || ' ' || p.last_name AS player_name,
       s.season,
+      t.name AS team_name,
+      s.plate_appearances,
+      s.at_bats,
+      s.runs,
+      s.hits,
+      s.home_runs,
+      s.rbis,
+      s.walks,
+      s.strikeouts,
+      s.stolen_bases,
+      s.batting_average,
+      s.on_base_percentage,
+      s.slugging_percentage,
       s.ops
     FROM qualified_batting_seasons s
     JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
     WHERE s.season = 2020
     ORDER BY s.ops DESC
     LIMIT 10
@@ -246,9 +309,23 @@ top_players_qualified_batting_avg_season:
     SELECT
       p.first_name || ' ' || p.last_name AS player_name,
       s.season,
-      s.batting_average
+      t.name AS team_name,
+      s.plate_appearances,
+      s.at_bats,
+      s.runs,
+      s.hits,
+      s.home_runs,
+      s.rbis,
+      s.walks,
+      s.strikeouts,
+      s.stolen_bases,
+      s.batting_average,
+      s.on_base_percentage,
+      s.slugging_percentage,
+      s.ops
     FROM qualified_batting_seasons s
     JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
     WHERE s.season = 2020
     ORDER BY s.batting_average DESC
     LIMIT 10
@@ -256,12 +333,26 @@ top_players_qualified_batting_avg_season:
 top_players_pitching_strikeouts_season:
   question: "Which pitchers had the most strikeouts in 2020?"
   sql: |
+    -- Same idea for pitching: full traditional_pitching line, not just strikeouts.
     SELECT
       p.first_name || ' ' || p.last_name AS player_name,
       s.season,
-      s.strikeouts
+      t.name AS team_name,
+      s.innings_pitched,
+      s.wins,
+      s.losses,
+      s.saves,
+      s.strikeouts,
+      s.walks_allowed,
+      s.hits_allowed,
+      s.earned_runs,
+      s.era,
+      s.whip,
+      s.k_per_9,
+      s.bb_per_9
     FROM all_pitching_seasons s
     JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
     WHERE s.season = 2020
     ORDER BY s.strikeouts DESC
     LIMIT 10
@@ -272,10 +363,22 @@ top_players_qualified_era_season:
     SELECT
       p.first_name || ' ' || p.last_name AS player_name,
       s.season,
+      t.name AS team_name,
+      s.innings_pitched,
+      s.wins,
+      s.losses,
+      s.saves,
+      s.strikeouts,
+      s.walks_allowed,
+      s.hits_allowed,
+      s.earned_runs,
       s.era,
-      s.innings_pitched
+      s.whip,
+      s.k_per_9,
+      s.bb_per_9
     FROM qualified_pitching_seasons s
     JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
     WHERE s.season = 2020
     ORDER BY s.era ASC
     LIMIT 10
@@ -286,10 +389,22 @@ top_players_qualified_whip_season:
     SELECT
       p.first_name || ' ' || p.last_name AS player_name,
       s.season,
+      t.name AS team_name,
+      s.innings_pitched,
+      s.wins,
+      s.losses,
+      s.saves,
+      s.strikeouts,
+      s.walks_allowed,
+      s.hits_allowed,
+      s.earned_runs,
+      s.era,
       s.whip,
-      s.innings_pitched
+      s.k_per_9,
+      s.bb_per_9
     FROM qualified_pitching_seasons s
     JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
     WHERE s.season = 2020
     ORDER BY s.whip ASC
     LIMIT 10
@@ -300,9 +415,23 @@ top_seasons_ops_all_time:
     SELECT
       p.first_name || ' ' || p.last_name AS player_name,
       s.season,
+      t.name AS team_name,
+      s.plate_appearances,
+      s.at_bats,
+      s.runs,
+      s.hits,
+      s.home_runs,
+      s.rbis,
+      s.walks,
+      s.strikeouts,
+      s.stolen_bases,
+      s.batting_average,
+      s.on_base_percentage,
+      s.slugging_percentage,
       s.ops
     FROM qualified_batting_seasons s
     JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
     ORDER BY s.ops DESC
     LIMIT 20
 
@@ -312,9 +441,23 @@ top_seasons_batting_avg_all_time:
     SELECT
       p.first_name || ' ' || p.last_name AS player_name,
       s.season,
-      s.batting_average
+      t.name AS team_name,
+      s.plate_appearances,
+      s.at_bats,
+      s.runs,
+      s.hits,
+      s.home_runs,
+      s.rbis,
+      s.walks,
+      s.strikeouts,
+      s.stolen_bases,
+      s.batting_average,
+      s.on_base_percentage,
+      s.slugging_percentage,
+      s.ops
     FROM qualified_batting_seasons s
     JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
     ORDER BY s.batting_average DESC
     LIMIT 20
 
@@ -324,10 +467,22 @@ top_seasons_era_all_time:
     SELECT
       p.first_name || ' ' || p.last_name AS player_name,
       s.season,
+      t.name AS team_name,
+      s.innings_pitched,
+      s.wins,
+      s.losses,
+      s.saves,
+      s.strikeouts,
+      s.walks_allowed,
+      s.hits_allowed,
+      s.earned_runs,
       s.era,
-      s.innings_pitched
+      s.whip,
+      s.k_per_9,
+      s.bb_per_9
     FROM qualified_pitching_seasons s
     JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
     ORDER BY s.era ASC
     LIMIT 20
 
@@ -337,10 +492,22 @@ top_seasons_whip_all_time:
     SELECT
       p.first_name || ' ' || p.last_name AS player_name,
       s.season,
+      t.name AS team_name,
+      s.innings_pitched,
+      s.wins,
+      s.losses,
+      s.saves,
+      s.strikeouts,
+      s.walks_allowed,
+      s.hits_allowed,
+      s.earned_runs,
+      s.era,
       s.whip,
-      s.innings_pitched
+      s.k_per_9,
+      s.bb_per_9
     FROM qualified_pitching_seasons s
     JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
     ORDER BY s.whip ASC
     LIMIT 20
 
@@ -352,12 +519,16 @@ single_team_batting_totals:
       s.season,
       SUM(s.plate_appearances) AS plate_appearances,
       SUM(s.at_bats) AS at_bats,
+      SUM(s.runs) AS runs,
       SUM(s.hits) AS hits,
       SUM(s.home_runs) AS home_runs,
       SUM(s.rbis) AS rbis,
       SUM(s.walks) AS walks,
       SUM(s.strikeouts) AS strikeouts,
+      SUM(s.stolen_bases) AS stolen_bases,
       ROUND(SUM(s.hits)::DECIMAL / NULLIF(SUM(s.at_bats), 0), 3) AS batting_average,
+      ROUND((SUM(s.hits) + SUM(s.walks) + SUM(s.hit_by_pitch))::DECIMAL / NULLIF(SUM(s.at_bats) + SUM(s.walks) + SUM(s.hit_by_pitch) + SUM(s.sacrifice_flies), 0), 3) AS on_base_percentage,
+      ROUND((SUM(s.singles) + 2 * SUM(s.doubles) + 3 * SUM(s.triples) + 4 * SUM(s.home_runs))::DECIMAL / NULLIF(SUM(s.at_bats), 0), 3) AS slugging_percentage,
       ROUND(
         ((SUM(s.hits) + SUM(s.walks) + SUM(s.hit_by_pitch))::DECIMAL /
          NULLIF(SUM(s.at_bats) + SUM(s.walks) + SUM(s.hit_by_pitch) + SUM(s.sacrifice_flies), 0))
@@ -396,10 +567,28 @@ single_team_pitching_totals:
 team_stats_home_runs_by_team:
   question: "How many home runs did each team hit in 2020?"
   sql: |
+    -- Team leaderboard: same rule as player leaderboards — full team batting
+    -- line, not just the one requested metric.
     SELECT
       t.name AS team_name,
       s.season,
-      SUM(s.home_runs) AS home_runs
+      SUM(s.plate_appearances) AS plate_appearances,
+      SUM(s.at_bats) AS at_bats,
+      SUM(s.runs) AS runs,
+      SUM(s.hits) AS hits,
+      SUM(s.home_runs) AS home_runs,
+      SUM(s.rbis) AS rbis,
+      SUM(s.walks) AS walks,
+      SUM(s.strikeouts) AS strikeouts,
+      SUM(s.stolen_bases) AS stolen_bases,
+      ROUND(SUM(s.hits)::DECIMAL / NULLIF(SUM(s.at_bats), 0), 3) AS batting_average,
+      ROUND((SUM(s.hits) + SUM(s.walks) + SUM(s.hit_by_pitch))::DECIMAL / NULLIF(SUM(s.at_bats) + SUM(s.walks) + SUM(s.hit_by_pitch) + SUM(s.sacrifice_flies), 0), 3) AS on_base_percentage,
+      ROUND((SUM(s.singles) + 2 * SUM(s.doubles) + 3 * SUM(s.triples) + 4 * SUM(s.home_runs))::DECIMAL / NULLIF(SUM(s.at_bats), 0), 3) AS slugging_percentage,
+      ROUND(
+        ((SUM(s.hits) + SUM(s.walks) + SUM(s.hit_by_pitch))::DECIMAL / NULLIF(SUM(s.at_bats) + SUM(s.walks) + SUM(s.hit_by_pitch) + SUM(s.sacrifice_flies), 0))
+        + ((SUM(s.singles) + 2 * SUM(s.doubles) + 3 * SUM(s.triples) + 4 * SUM(s.home_runs))::DECIMAL / NULLIF(SUM(s.at_bats), 0)),
+        3
+      ) AS ops
     FROM all_batting_seasons s
     JOIN teams t ON s.team_id = t.team_id
     WHERE s.season = 2020
@@ -412,7 +601,23 @@ team_stats_runs_by_team:
     SELECT
       t.name AS team_name,
       s.season,
-      SUM(s.runs) AS runs
+      SUM(s.plate_appearances) AS plate_appearances,
+      SUM(s.at_bats) AS at_bats,
+      SUM(s.runs) AS runs,
+      SUM(s.hits) AS hits,
+      SUM(s.home_runs) AS home_runs,
+      SUM(s.rbis) AS rbis,
+      SUM(s.walks) AS walks,
+      SUM(s.strikeouts) AS strikeouts,
+      SUM(s.stolen_bases) AS stolen_bases,
+      ROUND(SUM(s.hits)::DECIMAL / NULLIF(SUM(s.at_bats), 0), 3) AS batting_average,
+      ROUND((SUM(s.hits) + SUM(s.walks) + SUM(s.hit_by_pitch))::DECIMAL / NULLIF(SUM(s.at_bats) + SUM(s.walks) + SUM(s.hit_by_pitch) + SUM(s.sacrifice_flies), 0), 3) AS on_base_percentage,
+      ROUND((SUM(s.singles) + 2 * SUM(s.doubles) + 3 * SUM(s.triples) + 4 * SUM(s.home_runs))::DECIMAL / NULLIF(SUM(s.at_bats), 0), 3) AS slugging_percentage,
+      ROUND(
+        ((SUM(s.hits) + SUM(s.walks) + SUM(s.hit_by_pitch))::DECIMAL / NULLIF(SUM(s.at_bats) + SUM(s.walks) + SUM(s.hit_by_pitch) + SUM(s.sacrifice_flies), 0))
+        + ((SUM(s.singles) + 2 * SUM(s.doubles) + 3 * SUM(s.triples) + 4 * SUM(s.home_runs))::DECIMAL / NULLIF(SUM(s.at_bats), 0)),
+        3
+      ) AS ops
     FROM all_batting_seasons s
     JOIN teams t ON s.team_id = t.team_id
     WHERE s.season = 2020
@@ -425,7 +630,15 @@ team_stats_pitching_strikeouts_by_team:
     SELECT
       t.name AS team_name,
       s.season,
-      SUM(s.strikeouts) AS strikeouts
+      SUM(s.innings_pitched) AS innings_pitched,
+      SUM(s.wins) AS wins,
+      SUM(s.losses) AS losses,
+      SUM(s.saves) AS saves,
+      SUM(s.strikeouts) AS strikeouts,
+      SUM(s.walks_allowed) AS walks_allowed,
+      SUM(s.hits_allowed) AS hits_allowed,
+      ROUND((SUM(s.earned_runs) * 9.0) / NULLIF(SUM(s.innings_pitched), 0), 2) AS era,
+      ROUND((SUM(s.walks_allowed) + SUM(s.hits_allowed))::DECIMAL / NULLIF(SUM(s.innings_pitched), 0), 3) AS whip
     FROM all_pitching_seasons s
     JOIN teams t ON s.team_id = t.team_id
     WHERE s.season = 2020
@@ -438,7 +651,15 @@ team_stats_best_team_era:
     SELECT
       t.name AS team_name,
       s.season,
-      ROUND((SUM(s.earned_runs) * 9.0) / NULLIF(SUM(s.innings_pitched), 0), 2) AS era
+      SUM(s.innings_pitched) AS innings_pitched,
+      SUM(s.wins) AS wins,
+      SUM(s.losses) AS losses,
+      SUM(s.saves) AS saves,
+      SUM(s.strikeouts) AS strikeouts,
+      SUM(s.walks_allowed) AS walks_allowed,
+      SUM(s.hits_allowed) AS hits_allowed,
+      ROUND((SUM(s.earned_runs) * 9.0) / NULLIF(SUM(s.innings_pitched), 0), 2) AS era,
+      ROUND((SUM(s.walks_allowed) + SUM(s.hits_allowed))::DECIMAL / NULLIF(SUM(s.innings_pitched), 0), 3) AS whip
     FROM all_pitching_seasons s
     JOIN teams t ON s.team_id = t.team_id
     WHERE s.season = 2020
@@ -452,7 +673,23 @@ top_teams_home_runs:
     SELECT
       t.name AS team_name,
       s.season,
-      SUM(s.home_runs) AS home_runs
+      SUM(s.plate_appearances) AS plate_appearances,
+      SUM(s.at_bats) AS at_bats,
+      SUM(s.runs) AS runs,
+      SUM(s.hits) AS hits,
+      SUM(s.home_runs) AS home_runs,
+      SUM(s.rbis) AS rbis,
+      SUM(s.walks) AS walks,
+      SUM(s.strikeouts) AS strikeouts,
+      SUM(s.stolen_bases) AS stolen_bases,
+      ROUND(SUM(s.hits)::DECIMAL / NULLIF(SUM(s.at_bats), 0), 3) AS batting_average,
+      ROUND((SUM(s.hits) + SUM(s.walks) + SUM(s.hit_by_pitch))::DECIMAL / NULLIF(SUM(s.at_bats) + SUM(s.walks) + SUM(s.hit_by_pitch) + SUM(s.sacrifice_flies), 0), 3) AS on_base_percentage,
+      ROUND((SUM(s.singles) + 2 * SUM(s.doubles) + 3 * SUM(s.triples) + 4 * SUM(s.home_runs))::DECIMAL / NULLIF(SUM(s.at_bats), 0), 3) AS slugging_percentage,
+      ROUND(
+        ((SUM(s.hits) + SUM(s.walks) + SUM(s.hit_by_pitch))::DECIMAL / NULLIF(SUM(s.at_bats) + SUM(s.walks) + SUM(s.hit_by_pitch) + SUM(s.sacrifice_flies), 0))
+        + ((SUM(s.singles) + 2 * SUM(s.doubles) + 3 * SUM(s.triples) + 4 * SUM(s.home_runs))::DECIMAL / NULLIF(SUM(s.at_bats), 0)),
+        3
+      ) AS ops
     FROM all_batting_seasons s
     JOIN teams t ON s.team_id = t.team_id
     WHERE s.season = 2020
@@ -466,7 +703,23 @@ top_teams_runs:
     SELECT
       t.name AS team_name,
       s.season,
-      SUM(s.runs) AS runs
+      SUM(s.plate_appearances) AS plate_appearances,
+      SUM(s.at_bats) AS at_bats,
+      SUM(s.runs) AS runs,
+      SUM(s.hits) AS hits,
+      SUM(s.home_runs) AS home_runs,
+      SUM(s.rbis) AS rbis,
+      SUM(s.walks) AS walks,
+      SUM(s.strikeouts) AS strikeouts,
+      SUM(s.stolen_bases) AS stolen_bases,
+      ROUND(SUM(s.hits)::DECIMAL / NULLIF(SUM(s.at_bats), 0), 3) AS batting_average,
+      ROUND((SUM(s.hits) + SUM(s.walks) + SUM(s.hit_by_pitch))::DECIMAL / NULLIF(SUM(s.at_bats) + SUM(s.walks) + SUM(s.hit_by_pitch) + SUM(s.sacrifice_flies), 0), 3) AS on_base_percentage,
+      ROUND((SUM(s.singles) + 2 * SUM(s.doubles) + 3 * SUM(s.triples) + 4 * SUM(s.home_runs))::DECIMAL / NULLIF(SUM(s.at_bats), 0), 3) AS slugging_percentage,
+      ROUND(
+        ((SUM(s.hits) + SUM(s.walks) + SUM(s.hit_by_pitch))::DECIMAL / NULLIF(SUM(s.at_bats) + SUM(s.walks) + SUM(s.hit_by_pitch) + SUM(s.sacrifice_flies), 0))
+        + ((SUM(s.singles) + 2 * SUM(s.doubles) + 3 * SUM(s.triples) + 4 * SUM(s.home_runs))::DECIMAL / NULLIF(SUM(s.at_bats), 0)),
+        3
+      ) AS ops
     FROM all_batting_seasons s
     JOIN teams t ON s.team_id = t.team_id
     WHERE s.season = 2020
@@ -480,7 +733,15 @@ top_teams_pitching_strikeouts:
     SELECT
       t.name AS team_name,
       s.season,
-      SUM(s.strikeouts) AS strikeouts
+      SUM(s.innings_pitched) AS innings_pitched,
+      SUM(s.wins) AS wins,
+      SUM(s.losses) AS losses,
+      SUM(s.saves) AS saves,
+      SUM(s.strikeouts) AS strikeouts,
+      SUM(s.walks_allowed) AS walks_allowed,
+      SUM(s.hits_allowed) AS hits_allowed,
+      ROUND((SUM(s.earned_runs) * 9.0) / NULLIF(SUM(s.innings_pitched), 0), 2) AS era,
+      ROUND((SUM(s.walks_allowed) + SUM(s.hits_allowed))::DECIMAL / NULLIF(SUM(s.innings_pitched), 0), 3) AS whip
     FROM all_pitching_seasons s
     JOIN teams t ON s.team_id = t.team_id
     WHERE s.season = 2020
@@ -494,7 +755,15 @@ top_teams_best_era:
     SELECT
       t.name AS team_name,
       s.season,
-      ROUND((SUM(s.earned_runs) * 9.0) / NULLIF(SUM(s.innings_pitched), 0), 2) AS era
+      SUM(s.innings_pitched) AS innings_pitched,
+      SUM(s.wins) AS wins,
+      SUM(s.losses) AS losses,
+      SUM(s.saves) AS saves,
+      SUM(s.strikeouts) AS strikeouts,
+      SUM(s.walks_allowed) AS walks_allowed,
+      SUM(s.hits_allowed) AS hits_allowed,
+      ROUND((SUM(s.earned_runs) * 9.0) / NULLIF(SUM(s.innings_pitched), 0), 2) AS era,
+      ROUND((SUM(s.walks_allowed) + SUM(s.hits_allowed))::DECIMAL / NULLIF(SUM(s.innings_pitched), 0), 3) AS whip
     FROM all_pitching_seasons s
     JOIN teams t ON s.team_id = t.team_id
     WHERE s.season = 2020
@@ -679,9 +948,23 @@ best_single_season_home_runs:
     SELECT
       p.first_name || ' ' || p.last_name AS player_name,
       s.season,
-      s.home_runs
+      t.name AS team_name,
+      s.plate_appearances,
+      s.at_bats,
+      s.runs,
+      s.hits,
+      s.home_runs,
+      s.rbis,
+      s.walks,
+      s.strikeouts,
+      s.stolen_bases,
+      s.batting_average,
+      s.on_base_percentage,
+      s.slugging_percentage,
+      s.ops
     FROM all_batting_seasons s
     JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
     ORDER BY s.home_runs DESC
     LIMIT 20
 
@@ -691,112 +974,103 @@ best_single_season_strikeouts_pitching:
     SELECT
       p.first_name || ' ' || p.last_name AS player_name,
       s.season,
-      s.strikeouts
+      t.name AS team_name,
+      s.innings_pitched,
+      s.wins,
+      s.losses,
+      s.saves,
+      s.strikeouts,
+      s.walks_allowed,
+      s.hits_allowed,
+      s.earned_runs,
+      s.era,
+      s.whip,
+      s.k_per_9,
+      s.bb_per_9
     FROM all_pitching_seasons s
     JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
     ORDER BY s.strikeouts DESC
     LIMIT 20
 
 best_average_in_single_season:
   question: "Best batting average in 2025?"
   sql: |
+    -- qualified_batting_seasons already enforces the PA qualifier and has
+    -- every column below precomputed — no need to rebuild from batting_stats.
     SELECT
-      bs.player_id,
-      p.first_name,
-      p.last_name,
-      bs.season,
-      bs.team_id,
-      COUNT(DISTINCT bs.game_id) AS games_played,
-      SUM(bs.plate_appearances) AS plate_appearances,
-      SUM(bs.at_bats) AS at_bats,
-      SUM(bs.runs) AS runs,
-      SUM(bs.hits) AS hits,
-      SUM(bs.home_runs) AS home_runs,
-      SUM(bs.rbis) AS rbis,
-      SUM(bs.walks) AS walks,
-      SUM(bs.strikeouts) AS strikeouts,
-      SUM(bs.stolen_bases) AS stolen_bases,
-      ROUND(SUM(bs.hits)::DECIMAL / NULLIF(SUM(bs.at_bats), 0), 3) AS batting_average,
-      ROUND((SUM(bs.hits) + SUM(bs.walks) + SUM(bs.hit_by_pitch))::DECIMAL / NULLIF(SUM(bs.at_bats) + SUM(bs.walks) + SUM(bs.hit_by_pitch) + SUM(bs.sacrifice_flies), 0), 3) AS on_base_percentage,
-      ROUND((SUM(bs.singles) + 2 * SUM(bs.doubles) + 3 * SUM(bs.triples) + 4 * SUM(bs.home_runs))::DECIMAL / NULLIF(SUM(bs.at_bats), 0), 3) AS slugging_percentage,
-      ROUND(
-        (
-          (SUM(bs.hits) + SUM(bs.walks) + SUM(bs.hit_by_pitch))::DECIMAL / NULLIF(SUM(bs.at_bats) + SUM(bs.walks) + SUM(bs.hit_by_pitch) + SUM(bs.sacrifice_flies), 0)
-        ) + (
-          (SUM(bs.singles) + 2 * SUM(bs.doubles) + 3 * SUM(bs.triples) + 4 * SUM(bs.home_runs))::DECIMAL / NULLIF(SUM(bs.at_bats), 0)
-        ),
-        3
-      ) AS on_base_plus_slugging
-    FROM batting_stats bs
-    JOIN players p ON bs.player_id = p.player_id
-    JOIN games g ON bs.game_id = g.game_id
-    WHERE bs.season = 2025
-      AND LOWER(g.game_type) = 'regular'
-    GROUP BY bs.player_id, p.first_name, p.last_name, bs.season, bs.team_id
-    HAVING SUM(bs.plate_appearances) >= 502
-    ORDER BY batting_average DESC
-    LIMIT 20;
+      p.first_name || ' ' || p.last_name AS player_name,
+      s.season,
+      t.name AS team_name,
+      s.plate_appearances,
+      s.at_bats,
+      s.runs,
+      s.hits,
+      s.home_runs,
+      s.rbis,
+      s.walks,
+      s.strikeouts,
+      s.stolen_bases,
+      s.batting_average,
+      s.on_base_percentage,
+      s.slugging_percentage,
+      s.ops
+    FROM qualified_batting_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
+    WHERE s.season = 2025
+    ORDER BY s.batting_average DESC
+    LIMIT 20
 
 traditional_pitching_output_format_example:
   question: "Show traditional pitching stat lines for top ERA seasons in 2024."
   sql: |
     SELECT
-      ps.player_id,
-      p.first_name,
-      p.last_name,
-      ps.season,
-      ps.team_id,
-      COUNT(DISTINCT ps.game_id) AS games_played,
-      SUM(ps.innings_pitched) AS innings_pitched,
-      SUM(ps.hits_allowed) AS hits_allowed,
-      SUM(ps.home_runs_allowed) AS home_runs_allowed,
-      SUM(ps.runs_allowed) AS runs_allowed
-    FROM pitching_stats ps
-    JOIN players p ON ps.player_id = p.player_id
-    JOIN games g ON ps.game_id = g.game_id
-    WHERE ps.season = 2024
-      AND LOWER(g.game_type) = 'regular'
-    GROUP BY ps.player_id, p.first_name, p.last_name, ps.season, ps.team_id
-    HAVING SUM(ps.innings_pitched) >= 162
-    ORDER BY (SUM(ps.earned_runs) * 9.0) / NULLIF(SUM(ps.innings_pitched), 0) ASC
+      p.first_name || ' ' || p.last_name AS player_name,
+      s.season,
+      t.name AS team_name,
+      s.innings_pitched,
+      s.wins,
+      s.losses,
+      s.saves,
+      s.strikeouts,
+      s.walks_allowed,
+      s.hits_allowed,
+      s.earned_runs,
+      s.era,
+      s.whip,
+      s.k_per_9,
+      s.bb_per_9
+    FROM qualified_pitching_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
+    WHERE s.season = 2024
+    ORDER BY s.era ASC
     LIMIT 20
 
 traditional_batting_output_format_example:
   question: "Show traditional batting stat lines for top OPS seasons in 2024."
   sql: |
     SELECT
-      bs.player_id,
-      p.first_name,
-      p.last_name,
-      bs.season,
-      bs.team_id,
-      COUNT(DISTINCT bs.game_id) AS games_played,
-      SUM(bs.plate_appearances) AS plate_appearances,
-      SUM(bs.at_bats) AS at_bats,
-      SUM(bs.runs) AS runs,
-      SUM(bs.hits) AS hits,
-      SUM(bs.home_runs) AS home_runs,
-      SUM(bs.rbis) AS rbis,
-      SUM(bs.walks) AS walks,
-      SUM(bs.strikeouts) AS strikeouts,
-      SUM(bs.stolen_bases) AS stolen_bases,
-      ROUND(SUM(bs.hits)::DECIMAL / NULLIF(SUM(bs.at_bats), 0), 3) AS batting_average,
-      ROUND((SUM(bs.hits) + SUM(bs.walks) + SUM(bs.hit_by_pitch))::DECIMAL / NULLIF(SUM(bs.at_bats) + SUM(bs.walks) + SUM(bs.hit_by_pitch) + SUM(bs.sacrifice_flies), 0), 3) AS on_base_percentage,
-      ROUND((SUM(bs.singles) + 2 * SUM(bs.doubles) + 3 * SUM(bs.triples) + 4 * SUM(bs.home_runs))::DECIMAL / NULLIF(SUM(bs.at_bats), 0), 3) AS slugging_percentage,
-      ROUND(
-        (
-          (SUM(bs.hits) + SUM(bs.walks) + SUM(bs.hit_by_pitch))::DECIMAL / NULLIF(SUM(bs.at_bats) + SUM(bs.walks) + SUM(bs.hit_by_pitch) + SUM(bs.sacrifice_flies), 0)
-        ) + (
-          (SUM(bs.singles) + 2 * SUM(bs.doubles) + 3 * SUM(bs.triples) + 4 * SUM(bs.home_runs))::DECIMAL / NULLIF(SUM(bs.at_bats), 0)
-        ),
-        3
-      ) AS on_base_plus_slugging
-    FROM batting_stats bs
-    JOIN players p ON bs.player_id = p.player_id
-    JOIN games g ON bs.game_id = g.game_id
-    WHERE bs.season = 2024
-      AND LOWER(g.game_type) = 'regular'
-    GROUP BY bs.player_id, p.first_name, p.last_name, bs.season, bs.team_id
-    HAVING SUM(bs.plate_appearances) >= 502
-    ORDER BY on_base_plus_slugging DESC
+      p.first_name || ' ' || p.last_name AS player_name,
+      s.season,
+      t.name AS team_name,
+      s.plate_appearances,
+      s.at_bats,
+      s.runs,
+      s.hits,
+      s.home_runs,
+      s.rbis,
+      s.walks,
+      s.strikeouts,
+      s.stolen_bases,
+      s.batting_average,
+      s.on_base_percentage,
+      s.slugging_percentage,
+      s.ops
+    FROM qualified_batting_seasons s
+    JOIN players p ON s.player_id = p.player_id
+    LEFT JOIN teams t ON s.team_id = t.team_id
+    WHERE s.season = 2024
+    ORDER BY s.ops DESC
     LIMIT 20
