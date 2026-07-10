@@ -39,6 +39,8 @@ export const resultsStyles = {
     borderRadius: '10px',
     border: '1px solid',
     borderColor: 'divider',
+    borderLeft: '3px solid',
+    borderLeftColor: 'primary.main',
     backgroundColor: 'background.default',
     py: 1.25,
     px: 1.5,
@@ -52,6 +54,48 @@ export const resultsStyles = {
     fontSize: '0.72rem',
     letterSpacing: '0.08em',
     fontWeight: 700,
+  } as SxProps<Theme>,
+
+  headlineCard: {
+    display: 'flex',
+    alignItems: 'baseline',
+    flexWrap: 'wrap',
+    gap: 1.2,
+    borderRadius: '10px',
+    border: '1px solid',
+    borderColor: 'divider',
+    backgroundColor: 'background.default',
+    py: 2,
+    px: 2.2,
+    mb: 2,
+  } as SxProps<Theme>,
+
+  headlineValue: {
+    fontWeight: 800,
+    fontSize: '2.4rem',
+    lineHeight: 1,
+    fontVariantNumeric: 'tabular-nums',
+    color: 'secondary.main',
+    letterSpacing: '-0.01em',
+  } as SxProps<Theme>,
+
+  headlineMeta: {
+    display: 'flex',
+    flexDirection: 'column',
+  } as SxProps<Theme>,
+
+  headlineLabel: {
+    fontSize: '0.68rem',
+    fontWeight: 700,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    color: 'text.secondary',
+  } as SxProps<Theme>,
+
+  headlineEntity: {
+    fontSize: '1.2rem',
+    fontWeight: 700,
+    color: 'text.primary',
   } as SxProps<Theme>,
 
   queryDivider: {
@@ -78,18 +122,31 @@ export const resultsStyles = {
   } as SxProps<Theme>,
 
   tableHeaderCell: {
-    fontWeight: 600,
+    fontWeight: 700,
+    fontSize: '0.72rem',
+    letterSpacing: '0.06em',
+    textTransform: 'uppercase',
     whiteSpace: 'nowrap',
-    color: 'text.primary',
+    color: 'text.secondary',
     backgroundColor: 'background.default',
     borderBottom: '2px solid',
-    borderColor: 'divider',
+    borderColor: 'primary.dark',
+  } as SxProps<Theme>,
+
+  tableHeaderCellNumeric: {
+    textAlign: 'right',
   } as SxProps<Theme>,
 
   tableCell: {
     color: 'text.primary',
     borderBottom: '1px solid',
     borderColor: 'divider',
+  } as SxProps<Theme>,
+
+  tableCellNumeric: {
+    textAlign: 'right',
+    fontVariantNumeric: 'tabular-nums',
+    fontFeatureSettings: '"tnum"',
   } as SxProps<Theme>,
 
   tableRow: {

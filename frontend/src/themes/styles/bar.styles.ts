@@ -80,7 +80,7 @@ export const barStyles = {
 
   exampleQueries: {
     width: '100%',
-    maxWidth: 700,
+    maxWidth: 760,
     display: 'grid',
     gridTemplateColumns: {
       xs: '1fr',
@@ -91,15 +91,19 @@ export const barStyles = {
 
   exampleQuery: {
     justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    flexDirection: 'column',
     textTransform: 'none',
-    py: 1.2,
-    px: 1.3,
+    py: 1.1,
+    px: 1.4,
     backgroundColor: 'background.paper',
     border: '1px solid',
     borderColor: 'divider',
+    borderLeft: '3px solid',
+    borderLeftColor: 'divider',
     borderRadius: '10px',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.16s ease',
     textAlign: 'left',
     fontSize: '0.9375rem',
     color: 'text.primary',
@@ -109,7 +113,17 @@ export const barStyles = {
     '&:hover': {
       backgroundColor: 'action.hover',
       borderColor: 'primary.dark',
+      borderLeftColor: 'primary.main',
       transform: 'translateY(-1px)',
     },
+  } as SxProps<Theme>,
+
+  exampleQueryTag: {
+    fontSize: '0.64rem',
+    fontWeight: 800,
+    letterSpacing: '0.1em',
+    textTransform: 'uppercase',
+    color: 'primary.light',
+    mb: 0.4,
   } as SxProps<Theme>,
 }

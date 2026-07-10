@@ -57,15 +57,15 @@ export const inputStyles = {
   } as SxProps<Theme>,
 
   sendButton: {
-    background: 'linear-gradient(135deg, #2f8f46 0%, #3ea85a 100%)',
+    background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
     color: '#ffffff',
     width: 38,
     height: 38,
     flexShrink: 0,
     borderRadius: '6px',
-    boxShadow: '0 8px 18px rgba(47, 143, 70, 0.25)',
+    boxShadow: '0 8px 18px rgba(59, 130, 246, 0.28)',
     '&:hover': {
-      background: 'linear-gradient(135deg, #2a7e3d 0%, #2f8f46 100%)',
+      background: 'linear-gradient(135deg, #1d5fd1 0%, #2563eb 100%)',
     },
     '&:disabled': {
       opacity: 0.55,

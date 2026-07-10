@@ -11,10 +11,51 @@ interface ResultsProps {
   onExampleClick?: (query: string) => void
 }
 
+// A column is treated as numeric only if every non-empty value in it parses
+// as a number — used to right-align + tabular-num those columns like a real
+// stats table, without misclassifying things like "162" game IDs vs prose.
+const isNumericValue = (value: any): boolean => {
+  if (value === null || value === undefined || value === '') return false
+  if (typeof value === 'number') return true
+  if (typeof value !== 'string') return false
+  return /^-?\d[\d,]*\.?\d*$/.test(value.trim())
+}
+
+const getNumericColumns = (data: Array<Record<string, any>>, columns: string[]): Set<string> => {
+  const numeric = new Set<string>()
+  for (const col of columns) {
+    const values = data.map((row) => row[col]).filter((v) => v !== null && v !== undefined && v !== '')
+    if (values.length > 0 && values.every(isNumericValue)) {
+      numeric.add(col)
+    }
+  }
+  return numeric
+}
+
+// Display formatter for cell values. Baseball stats are at most 3 decimals
+// (AVG/OBP/SLG/OPS = .3f, ERA/WHIP = .2-.3f), but raw SQL sometimes returns
+// long repeating floats (e.g. innings as 538.6666666666667). Round any
+// non-integer numeric to 3 decimals and trim trailing zeros; leave integers,
+// non-numeric strings (names, dates), and years untouched.
+const formatCellValue = (value: any): any => {
+  if (value === null || value === undefined || value === '') return ''
+  if (!isNumericValue(value)) return value
+  const str = String(value)
+  // No decimal point -> leave untouched (years, counts, all-digit ids) so we
+  // never strip leading zeros from an identifier.
+  if (!str.includes('.')) return value
+  const num = Number(str.replace(/,/g, ''))
+  if (!Number.isFinite(num)) return value
+  // 536.0000000000 -> "536"; 538.6666667 -> "538.667"; 0.2470 -> "0.247".
+  if (Number.isInteger(num)) return String(num)
+  return parseFloat(num.toFixed(3)).toString()
+}
+
 const renderTable = (data: Array<Record<string, any>>) => {
   if (!data || data.length === 0) return null
 
   const columns = Object.keys(data[0])
+  const numericColumns = getNumericColumns(data, columns)
 
   return (
     <TableContainer component={Paper} sx={resultsStyles.tableContainer} elevation={0}>
@@ -22,7 +63,13 @@ const renderTable = (data: Array<Record<string, any>>) => {
         <TableHead sx={resultsStyles.tableHead}>
           <TableRow>
             {columns.map((col) => (
-              <TableCell key={col} sx={resultsStyles.tableHeaderCell}>
+              <TableCell
+                key={col}
+                sx={[
+                  resultsStyles.tableHeaderCell,
+                  numericColumns.has(col) ? resultsStyles.tableHeaderCellNumeric : {},
+                ]}
+              >
                 {col}
               </TableCell>
             ))}
@@ -32,8 +79,14 @@ const renderTable = (data: Array<Record<string, any>>) => {
           {data.map((row, idx) => (
             <TableRow key={idx} sx={resultsStyles.tableRow}>
               {columns.map((col) => (
-                <TableCell key={col} sx={resultsStyles.tableCell}>
-                  {row[col] ?? ''}
+                <TableCell
+                  key={col}
+                  sx={[
+                    resultsStyles.tableCell,
+                    numericColumns.has(col) ? resultsStyles.tableCellNumeric : {},
+                  ]}
+                >
+                  {formatCellValue(row[col])}
                 </TableCell>
               ))}
             </TableRow>
@@ -42,6 +95,32 @@ const renderTable = (data: Array<Record<string, any>>) => {
       </Table>
     </TableContainer>
   )
+}
+
+// A single row with one label column and exactly one numeric column reads as
+// a "leader" answer (e.g. Player Name + Career HR) — worth a big scoreboard-
+// style number instead of a one-row table. Anything wider/taller falls back
+// to the regular table so we're not guessing at data we don't understand.
+const renderHeadlineOrTable = (data: Array<Record<string, any>>) => {
+  const columns = Object.keys(data[0])
+  const numericColumns = getNumericColumns(data, columns)
+  const labelColumns = columns.filter((col) => !numericColumns.has(col))
+
+  if (data.length === 1 && numericColumns.size === 1 && labelColumns.length === 1) {
+    const valueCol = [...numericColumns][0]
+    const labelCol = labelColumns[0]
+    return (
+      <Box sx={resultsStyles.headlineCard}>
+        <Typography sx={resultsStyles.headlineValue}>{formatCellValue(data[0][valueCol])}</Typography>
+        <Box sx={resultsStyles.headlineMeta}>
+          <Typography sx={resultsStyles.headlineLabel}>{valueCol}</Typography>
+          <Typography sx={resultsStyles.headlineEntity}>{data[0][labelCol]}</Typography>
+        </Box>
+      </Box>
+    )
+  }
+
+  return renderTable(data)
 }
 
 const getSupplementalRows = (message: ChatMessage): Array<Record<string, any>> => {
@@ -62,7 +141,7 @@ const renderResults = (message: ChatMessage, showSupplemental: boolean, onToggle
   if (hasData) {
     return (
       <Card sx={resultsStyles.resultsCard}>
-        {renderTable(message.data!)}
+        {renderHeadlineOrTable(message.data!)}
         <Box sx={resultsStyles.metaRow}>
           <Typography variant="caption" sx={resultsStyles.metaText}>
             {message.data?.length ?? 0} rows returned
