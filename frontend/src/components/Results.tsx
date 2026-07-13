@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChatMessage } from '../types/Chat'
 import { Box, Button, CircularProgress, Divider, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Card, Paper } from '@mui/material'
+import type { SxProps, Theme } from '@mui/material/styles'
 import { resultsStyles } from '../themes/styles/results.styles'
 import { barStyles } from '../themes/styles/bar.styles'
 import { WelcomeScreen } from './WelcomeScreen'
@@ -68,7 +69,7 @@ const renderTable = (data: Array<Record<string, any>>) => {
                 sx={[
                   resultsStyles.tableHeaderCell,
                   numericColumns.has(col) ? resultsStyles.tableHeaderCellNumeric : {},
-                ]}
+                ] as SxProps<Theme>}
               >
                 {col}
               </TableCell>
@@ -84,7 +85,7 @@ const renderTable = (data: Array<Record<string, any>>) => {
                   sx={[
                     resultsStyles.tableCell,
                     numericColumns.has(col) ? resultsStyles.tableCellNumeric : {},
-                  ]}
+                  ] as SxProps<Theme>}
                 >
                   {formatCellValue(row[col])}
                 </TableCell>
