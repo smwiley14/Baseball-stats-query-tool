@@ -14,8 +14,8 @@ logs/
 backend/.env
 frontend/.env
 
-# Claude Code internal worktrees
-.claude/worktrees/
+# Local tooling / editor worktrees
+.claude/
 delete.py
 # Virtual environments
 .venv/
