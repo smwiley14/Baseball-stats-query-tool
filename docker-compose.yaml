@@ -25,7 +25,11 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL:-/baseball/api}
+        # Left empty on purpose: the frontend resolves its API path at runtime
+        # from where index.html is mounted (see frontend/config/config.ts), so
+        # one build serves both the site root ("/api") and the portfolio subpath
+        # ("/baseball/api"). Only set this to force a fixed/cross-origin API URL.
+        VITE_API_URL: ${VITE_API_URL:-}
     container_name: retrosheet-frontend
     restart: unless-stopped
     env_file:
