@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import os
 import re
 from agent.state import State
 from knowledge.vector_store import VectorStore
@@ -712,14 +713,17 @@ def check_relevance(state:State, vector_store:VectorStore):
     _raise_if_cancelled(state)
     query = state.user_query
 
-    # NOTE: PGVector similarity_search returns k docs even for low similarity.
-    # Use scores and a threshold to avoid marking unrelated queries as relevant.
-    # 0.4 was too strict: legitimate single-entity lookups (e.g. "how many home runs
-    # did <player> hit in <year>") scored ~0.50 distance and were wrongly rejected,
-    # while off-topic/destructive-sounding queries scored >=0.57. 0.55 keeps the
-    # latter out while letting normal phrasing variance through.
-    RELEVANCE_DISTANCE_THRESHOLD = 0.55
-    RELEVANCE_SCORE_THRESHOLD = 0.35
+    # PGVector similarity_search returns k docs even for low similarity, so we
+    # gate on the best distance: reject only when nothing is close enough.
+    # Observed distances: clearly off-topic ("capital of France") ~0.88;
+    # legitimate baseball questions land ~0.50-0.66 even when there's no close
+    # example (e.g. a month-level split like "<player> stats in July 2018").
+    # Default 0.78 lets baseball questions through while still rejecting the
+    # ~0.85+ off-topic ones. Tunable at runtime via env var (no rebuild): raise
+    # RELEVANCE_DISTANCE_THRESHOLD if legit questions are still being rejected,
+    # lower it if junk is getting through. Then `docker compose restart backend`.
+    RELEVANCE_DISTANCE_THRESHOLD = float(os.getenv("RELEVANCE_DISTANCE_THRESHOLD", "0.78"))
+    RELEVANCE_SCORE_THRESHOLD = float(os.getenv("RELEVANCE_SCORE_THRESHOLD", "0.22"))
     
     # Search for relevant schema and examples in knowledge base
     # NOTE: similarity_search_with_score is checked first because similarity_search_with_relevance_scores
@@ -911,7 +915,6 @@ def format_column_name(column_name: str) -> str:
         "Avg": "AVG",
     }
     
-    # Apply abbreviations
     for abbrev, replacement in abbreviations.items():
         readable = readable.replace(abbrev, replacement)
     
@@ -926,7 +929,7 @@ def generate_result_summary(query: str, data: list[dict], session_id: str | None
         llm = init_chat_model(model="gpt-4o-mini", temperature=0)
         
         # Create a concise summary prompt
-        summary_prompt = f"""Based on the following query and results, provide a brief 1-2 sentence summary of what the data shows.
+        summary_prompt = f"""Based on the following query and results, provide a brief statement summarizing the data returned.
 
 Query: {query}
 
