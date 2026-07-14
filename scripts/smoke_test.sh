@@ -74,10 +74,23 @@ check_rejected() {
 
 echo "== Health & auth =="
 check_status "health endpoint" 200 "$BASE_URL/health"
-check_status "chat rejects missing API key" 401 -X POST "$BASE_URL/chat" \
-  -H "Content-Type: application/json" -d '{"message":"test"}'
-check_status "chat rejects wrong API key" 401 -X POST "$BASE_URL/chat" \
-  -H "Content-Type: application/json" -H "X-API-Key: wrong-key" -d '{"message":"test"}'
+
+# The frontend's Nginx injects X-API-Key on every /api request, so the
+# missing/wrong-key checks only make sense straight against the backend, not
+# through the proxy. Skip them (rather than false-fail) when BASE_URL is a
+# proxy path ending in /api.
+case "$BASE_URL" in
+  */api|*/api/)
+    echo "SKIP: chat rejects missing API key (BASE_URL is the /api proxy — Nginx injects the key)"
+    echo "SKIP: chat rejects wrong API key   (run against the backend directly to test auth, e.g. :8000)"
+    ;;
+  *)
+    check_status "chat rejects missing API key" 401 -X POST "$BASE_URL/chat" \
+      -H "Content-Type: application/json" -d '{"message":"test"}'
+    check_status "chat rejects wrong API key" 401 -X POST "$BASE_URL/chat" \
+      -H "Content-Type: application/json" -H "X-API-Key: wrong-key" -d '{"message":"test"}'
+    ;;
+esac
 check_status "chat rejects malformed body" 422 -X POST "$BASE_URL/chat" \
   -H "Content-Type: application/json" -H "X-API-Key: $API_KEY" -d '{}'
 
