@@ -14,6 +14,7 @@ class State(BaseModel):
     relevance: bool | None = None
     relevance_status: Literal["relevant", "not_relevant"] | None = None
     table_data: list[dict[str, Any]] | None = None
+    primary_metric: str | None = None
     summary: str | None = None
     query_type: str | None = None
     query_type_guidance: str | None = None

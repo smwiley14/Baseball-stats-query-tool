@@ -86,11 +86,14 @@ export const useHooks = () => {
             : undefined
           const parsed = tableData ? { text: content, data: tableData } : parseMessageContent(content)
           
+          const primaryMetric = (data.metadata?.primary_metric as string | undefined) || undefined
+
           const assistantMessage: ChatMessage = {
             role: 'assistant',
             content: parsed.text,
             data: parsed.data ?? tableData ,
             supplemental_data: data.supplemental_data,
+            primaryMetric,
           }
           console.log('assistantMessage', assistantMessage)
           setMessages(prev => [...prev, assistantMessage])

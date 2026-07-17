@@ -16,18 +16,21 @@ app = FastAPI(
     redirect_slashes=False,  # Prevent 307 redirects on trailing-slash mismatches
 )
 
-# Restrict CORS to explicitly allowed origins.
-# Set ALLOWED_ORIGINS as a comma-separated list in your environment, e.g.:
-#   ALLOWED_ORIGINS=https://app.example.com,https://www.example.com
-_origins_env = os.getenv("ALLOWED_ORIGINS", "")
-if _origins_env:
-    allowed_origins = [o.strip() for o in _origins_env.split(",") if o.strip()]
-else:
-    # Fall back to localhost only — safe default for local development.
-    allowed_origins = ["http://localhost:3000", "http://localhost:5173"]
+# Allowed CORS origins come entirely from the ALLOWED_ORIGINS env var
+# (comma-separated) — nothing is hardcoded. Example:
+#   ALLOWED_ORIGINS=https://app.example.com,https://www.example.com,http://localhost:3000
+# If unset, no cross-origin browser requests are allowed. (The app is normally
+# served same-origin behind the frontend proxy, where CORS isn't triggered, so
+# this only matters for direct cross-origin API callers.)
+allowed_origins = [
+    origin.strip()
+    for origin in os.getenv("ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+if not allowed_origins:
     logger.warning(
-        "ALLOWED_ORIGINS env var not set; CORS restricted to localhost only. "
-        "Set ALLOWED_ORIGINS for production."
+        "ALLOWED_ORIGINS is not set; no cross-origin browser requests will be "
+        "allowed. Set ALLOWED_ORIGINS (comma-separated) to permit specific origins."
     )
 
 app.add_middleware(

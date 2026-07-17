@@ -13,4 +13,5 @@ export interface ChatMessage {
     content: string
     data?: Array<Record<string, any>> // Optional structured data for tables
     supplemental_data?: SupplementalData
+    primaryMetric?: string // Display-column the query ranks by (for highlight)
 }

@@ -833,14 +833,16 @@ def sql_return_message(state:State, vector_store:VectorStore):
         if data and isinstance(data, list) and len(data) > 0:
             # Format column names to be human-readable
             formatted_data = format_table_data(data)
-            
+
             # Generate a brief summary using LLM
             summary = generate_result_summary(state.user_query, data, state.session_id)
-            
+
             return {
                 "table_data": formatted_data,
                 "supplemental_data": supplemental_data,
                 "summary": summary,
+                # Which output column the query ranks by, so the UI can pull it
+                "primary_metric": _detect_primary_metric(state.sql_query, formatted_data),
                 "messages": [AIMessage(content=summary)]
             }
         elif data and isinstance(data, list) and len(data) == 0:
@@ -893,6 +895,49 @@ def format_table_data(data: list[dict]) -> list[dict]:
         formatted_data.append(formatted_row)
     
     return formatted_data
+
+
+def _detect_primary_metric(sql_query: str | None, formatted_data: list[dict]) -> str | None:
+    """Best-effort: identify which output column the query ranks by.
+
+    The frontend uses this to pull that stat next to the entity name and
+    highlight the column (StatMuse-style). Derived from the query's ORDER BY
+    since leaderboards sort on the answer metric. Returns a formatted display
+    key that exists in the data, or None (frontend then renders a plain table).
+    """
+    if not sql_query or not formatted_data:
+        return None
+    match = re.search(
+        r"order\s+by\s+(.+?)(?:\s+limit\b|;|\Z)", sql_query, re.IGNORECASE | re.DOTALL
+    )
+    if not match:
+        return None
+    first = match.group(1).split(",")[0].strip()
+    first = re.sub(r"\s+(asc|desc)\s*$", "", first, flags=re.IGNORECASE).strip()
+    # Only simple columns map cleanly to an output key; skip computed expressions.
+    if "(" in first or " " in first:
+        return None
+    col = first.split(".")[-1].strip().strip('"')
+    display = format_column_name(col)
+
+    keys = list(formatted_data[0].keys())
+    # Not an output column, or it's the entity/label column — nothing to highlight.
+    if display not in keys or display == keys[0]:
+        return None
+
+    def _is_number(value) -> bool:
+        if isinstance(value, (int, float)):
+            return True
+        try:
+            float(str(value).replace(",", ""))
+            return True
+        except (TypeError, ValueError):
+            return False
+
+    values = [row.get(display) for row in formatted_data if row.get(display) not in (None, "")]
+    if values and all(_is_number(v) for v in values):
+        return display
+    return None
 
 
 def format_column_name(column_name: str) -> str:

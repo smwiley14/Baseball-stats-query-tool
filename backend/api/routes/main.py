@@ -114,6 +114,7 @@ async def send_message(request: ChatRequest) -> ChatResponse:
                 "user_intent": result.get("user_intent"),
                 "query_type": result.get("query_type"),
                 "selected_stat_profile": result.get("selected_stat_profile"),
+                "primary_metric": result.get("primary_metric"),
                 "sql_query": result.get("sql_query"),
                 "sql_safety_status": result.get("sql_safety_status"),
                 "sql_syntax_status": result.get("sql_syntax_status"),
